@@ -14,7 +14,7 @@ tailwind.config = {
       fontFamily: { inter: ['Inter', 'sans-serif'] },
       colors: {
         navy: '#0c1f3f',
-        leaf: '#2e7d32', /* Dibuat sedikit lebih gelap agar kontras teks putih/hijau lebih tajam */
+        leaf: '#2e7d32',
       }
     }
   }
@@ -112,27 +112,7 @@ tailwind.config = {
   }
   .skill-bar-fill.animated { width: var(--w); }
 
-  /* Process line */
-  .process-line {
-    position: absolute; left: 23px; top: 48px; bottom: 0; width: 2px;
-    background: linear-gradient(to bottom, rgba(46, 125, 50, 0.6), rgba(12, 31, 63, 0.3), transparent);
-  }
-
-  /* Content number */
-  .content-num {
-    font-size: 48px; font-weight: 800; line-height: 1;
-    background: linear-gradient(to bottom, rgba(12, 31, 63, 0.3), rgba(12, 31, 63, 0.05));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-  }
-
-  .quote-mark {
-    font-size: 120px; line-height: 0.8; font-weight: 800;
-    background: linear-gradient(135deg, #0c1f3f, #2e7d32);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    opacity: 0.15;
-  }
-
-  /* Portfolio Overlay dibuat lebih gelap agar teks terang jelas terbaca */
+  /* Portfolio Overlay */
   .portfolio-overlay {
     position: absolute; inset: 0; background: rgba(12, 31, 63, 0.95);
     opacity: 0; transition: opacity 0.4s ease;
@@ -180,8 +160,9 @@ tailwind.config = {
     <div class="hidden md:flex items-center gap-8">
       <a href="#about" class="nav-link text-sm transition-colors">About</a>
       <a href="#skills" class="nav-link text-sm transition-colors">Skills</a>
-      <a href="#process" class="nav-link text-sm transition-colors">Process</a>
       <a href="#works" class="nav-link text-sm transition-colors">Portfolio</a>
+      <!-- Link Navigasi Baru untuk Design -->
+      <a href="#design" class="nav-link text-sm transition-colors">Design</a>
       <a href="#contact" class="px-5 py-2 text-sm font-bold rounded-full bg-navy text-white hover:bg-leaf transition-colors shadow-lg shadow-navy/20">Contact</a>
     </div>
     <button id="mobileMenuBtn" class="md:hidden text-navy">
@@ -194,8 +175,9 @@ tailwind.config = {
 <div id="mobileMenu" class="fixed inset-0 z-40 bg-white/98 backdrop-blur-xl flex flex-col items-center justify-center gap-8 transition-all duration-500 opacity-0 pointer-events-none">
   <a href="#about" class="mobile-link text-2xl font-bold text-slate-800 hover:text-navy transition-colors">About</a>
   <a href="#skills" class="mobile-link text-2xl font-bold text-slate-800 hover:text-navy transition-colors">Skills</a>
-  <a href="#process" class="mobile-link text-2xl font-bold text-slate-800 hover:text-navy transition-colors">Process</a>
   <a href="#works" class="mobile-link text-2xl font-bold text-slate-800 hover:text-navy transition-colors">Portfolio</a>
+  <!-- Link Mobile Baru untuk Design -->
+  <a href="#design" class="mobile-link text-2xl font-bold text-slate-800 hover:text-navy transition-colors">Design</a>
   <a href="#contact" class="mobile-link px-8 py-3 text-lg font-bold rounded-full bg-navy text-white hover:bg-leaf transition-colors mt-4">Contact</a>
   <button id="mobileMenuClose" class="absolute top-6 right-6 text-navy">
     <i data-lucide="x" class="w-8 h-8"></i>
@@ -275,7 +257,6 @@ tailwind.config = {
           <div class="absolute -inset-1 bg-gradient-to-br from-navy/30 to-leaf/30 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500 opacity-0 group-hover:opacity-100"></div>
           <div class="relative rounded-2xl overflow-hidden border border-navy/20 shadow-2xl">
             
-            <!-- GANTI LINK GAMBAR DI SINI (Foto Profil Anda) -->
             <img src="https://picsum.photos/seed/developer-portrait/600/750.jpg" alt="Moh Reza Alhasny" class="w-full h-auto object-cover" loading="lazy">
             
             <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-transparent to-transparent"></div>
@@ -306,7 +287,7 @@ tailwind.config = {
           </p>
         </div>
         
-        <!-- Contact Info dalam About -->
+        <!-- Contact Info -->
         <div class="section-hidden mt-8 p-6 bg-white/70 border border-navy/10 rounded-2xl shadow-sm" style="transition-delay: 0.25s;">
           <div class="flex flex-col md:flex-row gap-6">
             <div class="flex items-center gap-3">
@@ -424,14 +405,12 @@ tailwind.config = {
       <p class="text-base font-semibold text-slate-700 mt-4 max-w-2xl mx-auto">Berikut adalah pencapaian kunci dalam manajemen server, pengembangan modul ERP, hingga integrasi kecerdasan buatan.</p>
     </div>
 
-    <!-- Portfolio Grid (Height diubah jadi h-[340px] untuk menampung teks lengkap) -->
+    <!-- Portfolio Grid (Original Picsum Images) -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8" id="portfolioGrid">
       
       <!-- Item 1 - ERP Migration -->
       <div class="section-hidden portfolio-item rounded-3xl overflow-hidden relative cursor-pointer group shadow-lg border border-navy/10 h-[380px]">
-        <!-- GANTI LINK GAMBAR DI SINI -->
         <img src="https://picsum.photos/seed/erp-dashboard-project/800/600.jpg" alt="Odoo Migration" class="w-full h-full object-cover" loading="lazy">
-        
         <div class="portfolio-overlay p-8 text-left flex flex-col justify-end">
           <div>
             <span class="text-xs uppercase tracking-widest text-green-400 font-extrabold mb-2 block">System Migration</span>
@@ -445,9 +424,7 @@ tailwind.config = {
 
       <!-- Item 2 - Database Pipeline -->
       <div class="section-hidden portfolio-item rounded-3xl overflow-hidden relative cursor-pointer group shadow-lg border border-navy/10 h-[380px]" style="transition-delay: 0.1s;">
-        <!-- GANTI LINK GAMBAR DI SINI -->
         <img src="https://picsum.photos/seed/database-analytics/800/600.jpg" alt="Database Logic" class="w-full h-full object-cover" loading="lazy">
-        
         <div class="portfolio-overlay p-8 text-left flex flex-col justify-end">
           <div>
             <span class="text-xs uppercase tracking-widest text-green-400 font-extrabold mb-2 block">Database Ops</span>
@@ -461,9 +438,7 @@ tailwind.config = {
 
       <!-- Item 3 - Custom Accounting -->
       <div class="section-hidden portfolio-item rounded-3xl overflow-hidden relative cursor-pointer group shadow-lg border border-navy/10 h-[380px]" style="transition-delay: 0.2s;">
-        <!-- GANTI LINK GAMBAR DI SINI -->
         <img src="https://picsum.photos/seed/accounting-module/800/600.jpg" alt="Accounting Module" class="w-full h-full object-cover" loading="lazy">
-        
         <div class="portfolio-overlay p-8 text-left flex flex-col justify-end">
           <div>
             <span class="text-xs uppercase tracking-widest text-green-400 font-extrabold mb-2 block">Custom Module Development</span>
@@ -477,9 +452,7 @@ tailwind.config = {
 
       <!-- Item 4 - AI Prompt Logic -->
       <div class="section-hidden portfolio-item rounded-3xl overflow-hidden relative cursor-pointer group shadow-lg border border-navy/10 h-[380px]">
-        <!-- GANTI LINK GAMBAR DI SINI -->
         <img src="https://picsum.photos/seed/ai-code-logic/800/600.jpg" alt="AI Engine" class="w-full h-full object-cover" loading="lazy">
-        
         <div class="portfolio-overlay p-8 text-left flex flex-col justify-end">
           <div>
             <span class="text-xs uppercase tracking-widest text-green-400 font-extrabold mb-2 block">AI Prompt Architecture</span>
@@ -493,9 +466,7 @@ tailwind.config = {
 
       <!-- Item 5 - Server Tuning -->
       <div class="section-hidden portfolio-item rounded-3xl overflow-hidden relative cursor-pointer group shadow-lg border border-navy/10 h-[380px]" style="transition-delay: 0.1s;">
-        <!-- GANTI LINK GAMBAR DI SINI -->
         <img src="https://picsum.photos/seed/server-troubleshoot/800/600.jpg" alt="Server Tuning" class="w-full h-full object-cover" loading="lazy">
-        
         <div class="portfolio-overlay p-8 text-left flex flex-col justify-end">
           <div>
             <span class="text-xs uppercase tracking-widest text-green-400 font-extrabold mb-2 block">SysAdmin & Tuning</span>
@@ -509,9 +480,7 @@ tailwind.config = {
 
       <!-- Item 6 - Frontend SPA -->
       <div class="section-hidden portfolio-item rounded-3xl overflow-hidden relative cursor-pointer group shadow-lg border border-navy/10 h-[380px]" style="transition-delay: 0.2s;">
-        <!-- GANTI LINK GAMBAR DI SINI -->
         <img src="https://picsum.photos/seed/react-app-ui/800/600.jpg" alt="React App" class="w-full h-full object-cover" loading="lazy">
-        
         <div class="portfolio-overlay p-8 text-left flex flex-col justify-end">
           <div>
             <span class="text-xs uppercase tracking-widest text-green-400 font-extrabold mb-2 block">Frontend Engineering</span>
@@ -527,8 +496,85 @@ tailwind.config = {
   </div>
 </section>
 
+<!-- ===================== DESIGN (NEW SECTION) ===================== -->
+<section id="design" class="py-24 px-6 relative bg-white border-y border-navy/10">
+  <div class="glow-fuchsia" style="top: 100px; right: -200px; opacity: 0.2;"></div>
+  <div class="max-w-7xl mx-auto">
+    <div class="section-hidden text-center mb-12">
+      <span class="text-sm font-extrabold tracking-widest uppercase text-leaf mb-4 block">04 — Design</span>
+      <h2 class="text-3xl md:text-5xl font-extrabold tracking-tight text-navy">UI/UX <span class="text-gradient">Gallery</span></h2>
+      <p class="text-base font-semibold text-slate-700 mt-4 max-w-2xl mx-auto">Eksplorasi antarmuka dan pengalaman pengguna yang dirancang untuk berbagai *campaign* dan studi kasus bisnis.</p>
+    </div>
+
+    <!-- Grid Gambar Design dari Folder Lokal -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      
+      <!-- Ajiib Folder -->
+      <div class="section-hidden rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer">
+        <img src="image/Ajiib/01.png" alt="Ajiib 01" class="w-full h-[280px] object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+        <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+          <span class="text-white font-bold text-lg">Ajiib Travel - Preview 1</span>
+        </div>
+      </div>
+      <div class="section-hidden rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer" style="transition-delay: 0.1s;">
+        <img src="image/Ajiib/02.png" alt="Ajiib 02" class="w-full h-[280px] object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+        <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+          <span class="text-white font-bold text-lg">Ajiib Travel - Preview 2</span>
+        </div>
+      </div>
+      <div class="section-hidden rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer" style="transition-delay: 0.2s;">
+        <img src="image/Ajiib/03.png" alt="Ajiib 03" class="w-full h-[280px] object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+        <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+          <span class="text-white font-bold text-lg">Ajiib Travel - Preview 3</span>
+        </div>
+      </div>
+
+      <!-- NW Folder -->
+      <div class="section-hidden rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer">
+        <img src="image/NW/01.png" alt="NW 01" class="w-full h-[280px] object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+        <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+          <span class="text-white font-bold text-lg">NW Perfume - Preview 1</span>
+        </div>
+      </div>
+      <div class="section-hidden rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer" style="transition-delay: 0.1s;">
+        <img src="image/NW/02.png" alt="NW 02" class="w-full h-[280px] object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+        <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+          <span class="text-white font-bold text-lg">NW Perfume - Preview 2</span>
+        </div>
+      </div>
+      <div class="section-hidden rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer" style="transition-delay: 0.2s;">
+        <img src="image/NW/03.png" alt="NW 03" class="w-full h-[280px] object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+        <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+          <span class="text-white font-bold text-lg">NW Perfume - Preview 3</span>
+        </div>
+      </div>
+
+      <!-- Uji Cafe Folder -->
+      <div class="section-hidden rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer">
+        <img src="image/Uji%20cafe/01.png" alt="Uji Cafe 01" class="w-full h-[280px] object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+        <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+          <span class="text-white font-bold text-lg">Uji Cafe - Preview 1</span>
+        </div>
+      </div>
+      <div class="section-hidden rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer" style="transition-delay: 0.1s;">
+        <img src="image/Uji%20cafe/02.png" alt="Uji Cafe 02" class="w-full h-[280px] object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+        <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+          <span class="text-white font-bold text-lg">Uji Cafe - Preview 2</span>
+        </div>
+      </div>
+      <div class="section-hidden rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer" style="transition-delay: 0.2s;">
+        <img src="image/Uji%20cafe/03.png" alt="Uji Cafe 03" class="w-full h-[280px] object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+        <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+          <span class="text-white font-bold text-lg">Uji Cafe - Preview 3</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 <!-- ===================== CONTACT ===================== -->
-<section id="contact" class="py-24 px-6 relative bg-white/70 border-t border-navy/10">
+<section id="contact" class="py-24 px-6 relative bg-white/70">
   <div class="glow-blue" style="bottom: -100px; left: 50%; transform: translateX(-50%); opacity: 0.3;"></div>
   <div class="max-w-3xl mx-auto">
     <div class="section-hidden text-center mb-12">
