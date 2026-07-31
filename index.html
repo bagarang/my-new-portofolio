@@ -161,7 +161,7 @@ tailwind.config = {
       <a href="#about" class="nav-link text-sm transition-colors">About</a>
       <a href="#skills" class="nav-link text-sm transition-colors">Skills</a>
       <a href="#works" class="nav-link text-sm transition-colors">Portfolio</a>
-      <!-- Link Navigasi Baru untuk Design -->
+      <!-- Link Navigasi untuk Design -->
       <a href="#design" class="nav-link text-sm transition-colors">Design</a>
       <a href="#contact" class="px-5 py-2 text-sm font-bold rounded-full bg-navy text-white hover:bg-leaf transition-colors shadow-lg shadow-navy/20">Contact</a>
     </div>
@@ -176,7 +176,7 @@ tailwind.config = {
   <a href="#about" class="mobile-link text-2xl font-bold text-slate-800 hover:text-navy transition-colors">About</a>
   <a href="#skills" class="mobile-link text-2xl font-bold text-slate-800 hover:text-navy transition-colors">Skills</a>
   <a href="#works" class="mobile-link text-2xl font-bold text-slate-800 hover:text-navy transition-colors">Portfolio</a>
-  <!-- Link Mobile Baru untuk Design -->
+  <!-- Link Mobile untuk Design -->
   <a href="#design" class="mobile-link text-2xl font-bold text-slate-800 hover:text-navy transition-colors">Design</a>
   <a href="#contact" class="mobile-link px-8 py-3 text-lg font-bold rounded-full bg-navy text-white hover:bg-leaf transition-colors mt-4">Contact</a>
   <button id="mobileMenuClose" class="absolute top-6 right-6 text-navy">
@@ -408,7 +408,6 @@ tailwind.config = {
     <!-- Portfolio Grid (Original Picsum Images) -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8" id="portfolioGrid">
       
-      <!-- Item 1 - ERP Migration -->
       <div class="section-hidden portfolio-item rounded-3xl overflow-hidden relative cursor-pointer group shadow-lg border border-navy/10 h-[380px]">
         <img src="https://picsum.photos/seed/erp-dashboard-project/800/600.jpg" alt="Odoo Migration" class="w-full h-full object-cover" loading="lazy">
         <div class="portfolio-overlay p-8 text-left flex flex-col justify-end">
@@ -422,7 +421,6 @@ tailwind.config = {
         </div>
       </div>
 
-      <!-- Item 2 - Database Pipeline -->
       <div class="section-hidden portfolio-item rounded-3xl overflow-hidden relative cursor-pointer group shadow-lg border border-navy/10 h-[380px]" style="transition-delay: 0.1s;">
         <img src="https://picsum.photos/seed/database-analytics/800/600.jpg" alt="Database Logic" class="w-full h-full object-cover" loading="lazy">
         <div class="portfolio-overlay p-8 text-left flex flex-col justify-end">
@@ -436,7 +434,6 @@ tailwind.config = {
         </div>
       </div>
 
-      <!-- Item 3 - Custom Accounting -->
       <div class="section-hidden portfolio-item rounded-3xl overflow-hidden relative cursor-pointer group shadow-lg border border-navy/10 h-[380px]" style="transition-delay: 0.2s;">
         <img src="https://picsum.photos/seed/accounting-module/800/600.jpg" alt="Accounting Module" class="w-full h-full object-cover" loading="lazy">
         <div class="portfolio-overlay p-8 text-left flex flex-col justify-end">
@@ -450,7 +447,6 @@ tailwind.config = {
         </div>
       </div>
 
-      <!-- Item 4 - AI Prompt Logic -->
       <div class="section-hidden portfolio-item rounded-3xl overflow-hidden relative cursor-pointer group shadow-lg border border-navy/10 h-[380px]">
         <img src="https://picsum.photos/seed/ai-code-logic/800/600.jpg" alt="AI Engine" class="w-full h-full object-cover" loading="lazy">
         <div class="portfolio-overlay p-8 text-left flex flex-col justify-end">
@@ -464,7 +460,6 @@ tailwind.config = {
         </div>
       </div>
 
-      <!-- Item 5 - Server Tuning -->
       <div class="section-hidden portfolio-item rounded-3xl overflow-hidden relative cursor-pointer group shadow-lg border border-navy/10 h-[380px]" style="transition-delay: 0.1s;">
         <img src="https://picsum.photos/seed/server-troubleshoot/800/600.jpg" alt="Server Tuning" class="w-full h-full object-cover" loading="lazy">
         <div class="portfolio-overlay p-8 text-left flex flex-col justify-end">
@@ -478,7 +473,6 @@ tailwind.config = {
         </div>
       </div>
 
-      <!-- Item 6 - Frontend SPA -->
       <div class="section-hidden portfolio-item rounded-3xl overflow-hidden relative cursor-pointer group shadow-lg border border-navy/10 h-[380px]" style="transition-delay: 0.2s;">
         <img src="https://picsum.photos/seed/react-app-ui/800/600.jpg" alt="React App" class="w-full h-full object-cover" loading="lazy">
         <div class="portfolio-overlay p-8 text-left flex flex-col justify-end">
@@ -496,76 +490,77 @@ tailwind.config = {
   </div>
 </section>
 
-<!-- ===================== DESIGN (NEW SECTION) ===================== -->
+<!-- ===================== DESIGN (GALLERY WITH POP-UP/LIGHTBOX) ===================== -->
 <section id="design" class="py-24 px-6 relative bg-white border-y border-navy/10">
   <div class="glow-fuchsia" style="top: 100px; right: -200px; opacity: 0.2;"></div>
   <div class="max-w-7xl mx-auto">
     <div class="section-hidden text-center mb-12">
       <span class="text-sm font-extrabold tracking-widest uppercase text-leaf mb-4 block">04 — Design</span>
       <h2 class="text-3xl md:text-5xl font-extrabold tracking-tight text-navy">UI/UX <span class="text-gradient">Gallery</span></h2>
-      <p class="text-base font-semibold text-slate-700 mt-4 max-w-2xl mx-auto">Eksplorasi antarmuka dan pengalaman pengguna yang dirancang untuk berbagai *campaign* dan studi kasus bisnis.</p>
+      <p class="text-base font-semibold text-slate-700 mt-4 max-w-2xl mx-auto">Klik pada gambar untuk memperbesar pratinjau desain antarmuka.</p>
     </div>
 
     <!-- Grid Gambar Design dari Folder Lokal -->
+    <!-- Penambahan class 'lightbox-trigger' untuk memicu pop-up JS -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       
       <!-- Ajiib Folder -->
-      <div class="section-hidden rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer">
+      <div class="section-hidden lightbox-trigger rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer">
         <img src="image/Ajiib/01.png" alt="Ajiib 01" class="w-full h-[280px] object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
         <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
-          <span class="text-white font-bold text-lg">Ajiib Travel - Preview 1</span>
+          <span class="text-white font-bold text-lg flex items-center gap-2"><i data-lucide="zoom-in" class="w-5 h-5"></i> Ajiib Travel 1</span>
         </div>
       </div>
-      <div class="section-hidden rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer" style="transition-delay: 0.1s;">
+      <div class="section-hidden lightbox-trigger rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer" style="transition-delay: 0.1s;">
         <img src="image/Ajiib/02.png" alt="Ajiib 02" class="w-full h-[280px] object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
         <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
-          <span class="text-white font-bold text-lg">Ajiib Travel - Preview 2</span>
+          <span class="text-white font-bold text-lg flex items-center gap-2"><i data-lucide="zoom-in" class="w-5 h-5"></i> Ajiib Travel 2</span>
         </div>
       </div>
-      <div class="section-hidden rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer" style="transition-delay: 0.2s;">
+      <div class="section-hidden lightbox-trigger rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer" style="transition-delay: 0.2s;">
         <img src="image/Ajiib/03.png" alt="Ajiib 03" class="w-full h-[280px] object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
         <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
-          <span class="text-white font-bold text-lg">Ajiib Travel - Preview 3</span>
+          <span class="text-white font-bold text-lg flex items-center gap-2"><i data-lucide="zoom-in" class="w-5 h-5"></i> Ajiib Travel 3</span>
         </div>
       </div>
 
       <!-- NW Folder -->
-      <div class="section-hidden rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer">
+      <div class="section-hidden lightbox-trigger rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer">
         <img src="image/NW/01.png" alt="NW 01" class="w-full h-[280px] object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
         <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
-          <span class="text-white font-bold text-lg">NW Perfume - Preview 1</span>
+          <span class="text-white font-bold text-lg flex items-center gap-2"><i data-lucide="zoom-in" class="w-5 h-5"></i> NW Perfume 1</span>
         </div>
       </div>
-      <div class="section-hidden rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer" style="transition-delay: 0.1s;">
+      <div class="section-hidden lightbox-trigger rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer" style="transition-delay: 0.1s;">
         <img src="image/NW/02.png" alt="NW 02" class="w-full h-[280px] object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
         <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
-          <span class="text-white font-bold text-lg">NW Perfume - Preview 2</span>
+          <span class="text-white font-bold text-lg flex items-center gap-2"><i data-lucide="zoom-in" class="w-5 h-5"></i> NW Perfume 2</span>
         </div>
       </div>
-      <div class="section-hidden rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer" style="transition-delay: 0.2s;">
+      <div class="section-hidden lightbox-trigger rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer" style="transition-delay: 0.2s;">
         <img src="image/NW/03.png" alt="NW 03" class="w-full h-[280px] object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
         <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
-          <span class="text-white font-bold text-lg">NW Perfume - Preview 3</span>
+          <span class="text-white font-bold text-lg flex items-center gap-2"><i data-lucide="zoom-in" class="w-5 h-5"></i> NW Perfume 3</span>
         </div>
       </div>
 
       <!-- Uji Cafe Folder -->
-      <div class="section-hidden rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer">
+      <div class="section-hidden lightbox-trigger rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer">
         <img src="image/Uji%20cafe/01.png" alt="Uji Cafe 01" class="w-full h-[280px] object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
         <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
-          <span class="text-white font-bold text-lg">Uji Cafe - Preview 1</span>
+          <span class="text-white font-bold text-lg flex items-center gap-2"><i data-lucide="zoom-in" class="w-5 h-5"></i> Uji Cafe 1</span>
         </div>
       </div>
-      <div class="section-hidden rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer" style="transition-delay: 0.1s;">
+      <div class="section-hidden lightbox-trigger rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer" style="transition-delay: 0.1s;">
         <img src="image/Uji%20cafe/02.png" alt="Uji Cafe 02" class="w-full h-[280px] object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
         <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
-          <span class="text-white font-bold text-lg">Uji Cafe - Preview 2</span>
+          <span class="text-white font-bold text-lg flex items-center gap-2"><i data-lucide="zoom-in" class="w-5 h-5"></i> Uji Cafe 2</span>
         </div>
       </div>
-      <div class="section-hidden rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer" style="transition-delay: 0.2s;">
+      <div class="section-hidden lightbox-trigger rounded-2xl overflow-hidden group shadow-md border border-navy/10 relative cursor-pointer" style="transition-delay: 0.2s;">
         <img src="image/Uji%20cafe/03.png" alt="Uji Cafe 03" class="w-full h-[280px] object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
         <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
-          <span class="text-white font-bold text-lg">Uji Cafe - Preview 3</span>
+          <span class="text-white font-bold text-lg flex items-center gap-2"><i data-lucide="zoom-in" class="w-5 h-5"></i> Uji Cafe 3</span>
         </div>
       </div>
 
@@ -667,6 +662,15 @@ tailwind.config = {
   </div>
 </footer>
 
+<!-- ===================== LIGHTBOX MODAL (NEW) ===================== -->
+<div id="lightboxModal" class="fixed inset-0 z-[999] bg-navy/90 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300">
+  <button id="lightboxClose" class="absolute top-6 right-6 text-white hover:text-leaf transition-colors z-10">
+    <i data-lucide="x" class="w-10 h-10"></i>
+  </button>
+  <!-- Menambahkan max height dan width agar tidak keluar layar -->
+  <img id="lightboxImg" src="" alt="Design Preview" class="max-w-[90vw] max-h-[90vh] object-contain rounded-xl shadow-2xl scale-95 transition-transform duration-300 relative z-0">
+</div>
+
 <script>
 // Initialize Lucide icons
 lucide.createIcons();
@@ -730,6 +734,53 @@ document.querySelectorAll('.portfolio-item').forEach(card => {
   card.addEventListener('mouseleave', () => {
     card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)';
   });
+});
+
+// ========== LIGHTBOX MODAL LOGIC (NEW) ==========
+const lightboxModal = document.getElementById('lightboxModal');
+const lightboxImg = document.getElementById('lightboxImg');
+const lightboxClose = document.getElementById('lightboxClose');
+const lightboxTriggers = document.querySelectorAll('.lightbox-trigger');
+
+function openLightbox(src) {
+  lightboxImg.src = src;
+  lightboxModal.classList.remove('opacity-0', 'pointer-events-none');
+  lightboxModal.classList.add('opacity-100', 'pointer-events-auto');
+  lightboxImg.classList.remove('scale-95');
+  lightboxImg.classList.add('scale-100');
+  document.body.style.overflow = 'hidden'; // Menonaktifkan scroll website saat pop-up terbuka
+}
+
+function closeLightbox() {
+  lightboxModal.classList.remove('opacity-100', 'pointer-events-auto');
+  lightboxModal.classList.add('opacity-0', 'pointer-events-none');
+  lightboxImg.classList.remove('scale-100');
+  lightboxImg.classList.add('scale-95');
+  document.body.style.overflow = ''; // Mengaktifkan scroll kembali
+  setTimeout(() => { lightboxImg.src = ''; }, 300); // Menghapus source setelah animasi selesai
+}
+
+// Tambahkan event ke semua gambar di section UI/UX
+lightboxTriggers.forEach(trigger => {
+  trigger.addEventListener('click', () => {
+    const imgSrc = trigger.querySelector('img').getAttribute('src');
+    openLightbox(imgSrc);
+  });
+});
+
+// Tutup dengan klik tombol X
+lightboxClose.addEventListener('click', closeLightbox);
+
+// Tutup dengan klik area diluar gambar
+lightboxModal.addEventListener('click', (e) => {
+  if (e.target === lightboxModal) closeLightbox();
+});
+
+// Tutup menggunakan tombol Escape pada keyboard
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !lightboxModal.classList.contains('pointer-events-none')) {
+    closeLightbox();
+  }
 });
 
 // ========== Contact Form ==========
