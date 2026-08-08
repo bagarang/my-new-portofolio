@@ -1,0 +1,1849 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexus AI Studio — Workspace</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+  :root {
+    --bg: #0a0b0d;
+    --bg-elevated: #101216;
+    --surface: #14171c;
+    --surface-2: #1a1e25;
+    --surface-hover: #1f242c;
+    --border: #232831;
+    --border-strong: #2e3540;
+    --fg: #e8eaed;
+    --fg-muted: #9ba1a8;
+    --fg-dim: #5f6571;
+    --accent: #c5f82a;
+    --accent-dim: rgba(197, 248, 42, 0.12);
+    --accent-glow: rgba(197, 248, 42, 0.4);
+    --warm: #ffb454;
+    --warm-dim: rgba(255, 180, 84, 0.12);
+    --danger: #ff6b6b;
+    --info: #5eb1ff;
+  }
+
+  * { font-family: 'Space Grotesk', sans-serif; -webkit-font-smoothing: antialiased; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    background-image:
+      radial-gradient(circle at 15% 0%, rgba(197, 248, 42, 0.05) 0%, transparent 45%),
+      radial-gradient(circle at 85% 100%, rgba(255, 180, 84, 0.04) 0%, transparent 50%);
+    background-attachment: fixed;
+    overflow: hidden;
+  }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--fg-dim); }
+
+  .typing-cursor::after {
+    content: '▊';
+    color: var(--accent);
+    animation: blink 1s infinite;
+    margin-left: 2px;
+  }
+  @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+
+  @keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 var(--accent-glow); }
+    70% { box-shadow: 0 0 0 8px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+  .pulse-ring { animation: pulse-ring 2s infinite; }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 0 4px rgba(197, 248, 42, 0.12);
+    transition: all 0.15s;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 6px rgba(197, 248, 42, 0.2);
+  }
+
+  .code-block {
+    background: #08090b;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.6;
+    overflow-x: auto;
+    position: relative;
+    color: #d4d4d4;
+  }
+  .code-block::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+  .code-block .kw { color: #ff79c6; }
+  .code-block .str { color: #f1fa8c; }
+  .code-block .com { color: #6272a4; font-style: italic; }
+  .code-block .fn { color: #c5f82a; }
+  .code-block .num { color: #ffb454; }
+
+  .fade-in { animation: fadeIn 0.3s ease-out; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg-enter { animation: msgEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+  @keyframes msgEnter {
+    from { opacity: 0; transform: translateY(8px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(197, 248, 42, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(197, 248, 42, 0.025) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  .noise::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.012;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' /%3E%3C/svg%3E");
+  }
+
+  .btn-accent {
+    background: var(--accent);
+    color: #0a0b0d;
+    font-weight: 600;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-accent:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 25px -10px var(--accent-glow);
+  }
+  .btn-accent:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--fg-muted);
+    border: 1px solid var(--border);
+    transition: all 0.15s;
+  }
+  .btn-ghost:hover {
+    background: var(--surface);
+    color: var(--fg);
+    border-color: var(--border-strong);
+  }
+
+  .sidebar-item {
+    border-left: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .sidebar-item:hover {
+    background: var(--surface);
+    color: var(--fg);
+  }
+  .sidebar-item.active {
+    background: var(--surface);
+    color: var(--accent);
+    border-left-color: var(--accent);
+  }
+
+  .blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.18;
+    pointer-events: none;
+    z-index: 0;
+  }
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(40px, -30px) scale(1.1); }
+    66% { transform: translate(-30px, 30px) scale(0.95); }
+  }
+
+  .glass {
+    background: rgba(20, 23, 28, 0.65);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .badge-accent {
+    background: var(--accent-dim);
+    color: var(--accent);
+    border: 1px solid rgba(197, 248, 42, 0.22);
+  }
+  .badge-warm {
+    background: var(--warm-dim);
+    color: var(--warm);
+    border: 1px solid rgba(255, 180, 84, 0.22);
+  }
+  .badge-info {
+    background: rgba(94, 177, 255, 0.12);
+    color: var(--info);
+    border: 1px solid rgba(94, 177, 255, 0.22);
+  }
+
+  textarea:focus, input:focus {
+    outline: none;
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px var(--accent-dim);
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+  }
+
+  .thinking-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--fg-dim);
+    animation: thinking 1.4s infinite;
+  }
+  .thinking-dot:nth-child(2) { animation-delay: 0.2s; }
+  .thinking-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes thinking {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-4px); opacity: 1; }
+  }
+
+  .view { display: none; }
+  .view.active { display: flex; }
+
+  .history-item:hover .history-actions { opacity: 1; }
+  .history-actions { opacity: 0; transition: opacity 0.15s; }
+
+  .model-card {
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .model-card:hover {
+    border-color: var(--border-strong);
+    transform: translateY(-2px);
+  }
+  .model-card.selected {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  /* Token meter */
+  .meter-track {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .meter-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--warm) 100%);
+    transition: width 0.4s ease;
+  }
+
+  /* Modal */
+  .modal-backdrop {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+  }
+
+  /* Toast */
+  .toast {
+    animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Selection */
+  ::selection {
+    background: var(--accent-dim);
+    color: var(--accent);
+  }
+
+  /* Tooltip */
+  [data-tooltip] { position: relative; }
+  [data-tooltip]::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-elevated);
+    color: var(--fg);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+    border: 1px solid var(--border);
+    z-index: 50;
+  }
+  [data-tooltip]:hover::before { opacity: 1; }
+
+  .markdown p { margin-bottom: 0.5rem; }
+  .markdown ul, .markdown ol { margin: 0.5rem 0; padding-left: 1.25rem; }
+  .markdown ul { list-style: disc; }
+  .markdown ol { list-style: decimal; }
+  .markdown li { margin-bottom: 0.25rem; }
+  .markdown strong { color: var(--fg); font-weight: 600; }
+  .markdown code:not(.code-block code) {
+    background: var(--surface-2);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85em;
+    color: var(--accent);
+  }
+  .markdown h3 { font-weight: 600; margin: 0.75rem 0 0.5rem; color: var(--fg); }
+</style>
+</head>
+<body class="noise">
+
+<!-- Background ambient blobs -->
+<div class="blob" style="background: #c5f82a; width: 500px; height: 500px; top: -150px; right: -100px; animation: float 18s ease-in-out infinite;"></div>
+<div class="blob" style="background: #ffb454; width: 400px; height: 400px; bottom: -100px; left: 200px; animation: float 22s ease-in-out infinite reverse;"></div>
+
+<div class="h-screen flex flex-col relative z-10">
+
+  <!-- Top Bar -->
+  <header class="glass border-b border-[var(--border)] flex items-center justify-between px-4 py-2.5 z-30">
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2.5">
+        <div class="w-7 h-7 rounded-lg bg-[var(--accent)] flex items-center justify-center relative">
+          <svg viewBox="0 0 24 24" class="w-4 h-4 text-black" fill="currentColor">
+            <path d="M12 2L4 7v10l8 5 8-5V7l-8-5zm0 2.3l5.5 3.4v8.6L12 19.7l-5.5-3.4V7.7L12 4.3z"/>
+            <circle cx="12" cy="12" r="2.5"/>
+          </svg>
+        </div>
+        <div>
+          <div class="text-sm font-semibold leading-tight">Nexus AI Studio</div>
+          <div class="text-[10px] text-[var(--fg-dim)] leading-tight mono">v2.4.1 · workspace</div>
+        </div>
+      </div>
+      <div class="h-5 w-px bg-[var(--border)]"></div>
+      <nav class="flex items-center gap-1 text-xs">
+        <button class="px-2.5 py-1 rounded text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--surface)] transition">File</button>
+        <button class="px-2.5 py-1 rounded text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--surface)] transition">Edit</button>
+        <button class="px-2.5 py-1 rounded text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--surface)] transition">View</button>
+        <button class="px-2.5 py-1 rounded text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--surface)] transition">Run</button>
+        <button class="px-2.5 py-1 rounded text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--surface)] transition">Help</button>
+      </nav>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 px-2.5 py-1 rounded-md bg-[var(--surface)] border border-[var(--border)]">
+        <div class="status-dot"></div>
+        <span class="text-[11px] text-[var(--fg-muted)] mono">API Connected</span>
+        <span class="text-[10px] text-[var(--fg-dim)] mono">·</span>
+        <span class="text-[11px] text-[var(--fg-dim)] mono">12ms</span>
+      </div>
+      <button onclick="toggleModal('shortcuts')" class="btn-ghost px-2.5 py-1.5 rounded-md text-xs flex items-center gap-1.5" data-tooltip="Keyboard shortcuts">
+        <i data-lucide="keyboard" class="w-3.5 h-3.5"></i>
+      </button>
+      <button onclick="toggleModal('settings')" class="btn-ghost px-2.5 py-1.5 rounded-md text-xs flex items-center gap-1.5">
+        <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+        <span>Settings</span>
+      </button>
+      <div class="w-7 h-7 rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--warm)] flex items-center justify-center text-[10px] font-bold text-black">RA</div>
+    </div>
+  </header>
+
+  <div class="flex-1 flex overflow-hidden">
+
+    <!-- Left Sidebar -->
+    <aside class="w-56 border-r border-[var(--border)] bg-[var(--bg-elevated)] flex flex-col">
+      <div class="p-3">
+        <button onclick="newConversation()" class="w-full btn-accent px-3 py-2 rounded-md text-xs flex items-center justify-center gap-2">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          New Conversation
+        </button>
+      </div>
+
+      <nav class="px-2 flex-1 overflow-y-auto">
+        <div class="text-[10px] uppercase tracking-wider text-[var(--fg-dim)] px-2 py-2 mono">Workspace</div>
+        <button data-view="chat" class="nav-btn sidebar-item active w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-r-md">
+          <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+          <span>Chat</span>
+          <span class="ml-auto badge badge-accent mono">8</span>
+        </button>
+        <button data-view="generate" class="nav-btn sidebar-item w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-r-md text-[var(--fg-muted)]">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+          <span>Generate</span>
+        </button>
+        <button data-view="models" class="nav-btn sidebar-item w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-r-md text-[var(--fg-muted)]">
+          <i data-lucide="cpu" class="w-3.5 h-3.5"></i>
+          <span>Models</span>
+        </button>
+        <button data-view="history" class="nav-btn sidebar-item w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-r-md text-[var(--fg-muted)]">
+          <i data-lucide="history" class="w-3.5 h-3.5"></i>
+          <span>History</span>
+        </button>
+        <button data-view="templates" class="nav-btn sidebar-item w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-r-md text-[var(--fg-muted)]">
+          <i data-lucide="layout-template" class="w-3.5 h-3.5"></i>
+          <span>Templates</span>
+        </button>
+        <button data-view="datasets" class="nav-btn sidebar-item w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-r-md text-[var(--fg-muted)]">
+          <i data-lucide="database" class="w-3.5 h-3.5"></i>
+          <span>Datasets</span>
+        </button>
+
+        <div class="text-[10px] uppercase tracking-wider text-[var(--fg-dim)] px-2 py-2 mt-3 mono">Recent</div>
+        <div id="recent-list" class="space-y-0.5"></div>
+
+        <div class="text-[10px] uppercase tracking-wider text-[var(--fg-dim)] px-2 py-2 mt-3 mono">Pinned</div>
+        <button class="sidebar-item w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-r-md text-[var(--fg-muted)]">
+          <i data-lucide="pin" class="w-3 h-3 text-[var(--warm)]"></i>
+          <span class="truncate">Research notes — Q4</span>
+        </button>
+        <button class="sidebar-item w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-r-md text-[var(--fg-muted)]">
+          <i data-lucide="pin" class="w-3 h-3 text-[var(--warm)]"></i>
+          <span class="truncate">Landing page copy</span>
+        </button>
+      </nav>
+
+      <div class="p-3 border-t border-[var(--border)]">
+        <div class="flex items-center justify-between text-[10px] text-[var(--fg-dim)] mono mb-2">
+          <span>USAGE THIS MONTH</span>
+          <span>1.2M / 5M</span>
+        </div>
+        <div class="meter-track">
+          <div class="meter-fill" style="width: 24%"></div>
+        </div>
+        <button class="mt-3 w-full text-[10px] text-[var(--fg-muted)] hover:text-[var(--accent)] transition flex items-center justify-center gap-1.5 py-1">
+          <i data-lucide="arrow-up-circle" class="w-3 h-3"></i>
+          Upgrade to Pro
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex overflow-hidden bg-[var(--bg)]">
+
+      <!-- ============ CHAT VIEW ============ -->
+      <div id="view-chat" class="view active flex-1 flex flex-col">
+        <!-- Chat header -->
+        <div class="border-b border-[var(--border)] px-6 py-3 flex items-center justify-between glass">
+          <div class="flex items-center gap-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-sm font-semibold" id="chat-title">Untitled Conversation</h2>
+                <span class="badge badge-accent">LIVE</span>
+              </div>
+              <div class="text-[11px] text-[var(--fg-dim)] mt-0.5 flex items-center gap-2 mono">
+                <span>model: <span class="text-[var(--accent)]" id="header-model">nexus-pro-1.5</span></span>
+                <span>·</span>
+                <span>ctx: 8K tokens</span>
+                <span>·</span>
+                <span id="msg-count">0 messages</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button onclick="exportConversation()" class="btn-ghost px-2.5 py-1.5 rounded-md text-xs flex items-center gap-1.5" data-tooltip="Export conversation">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            </button>
+            <button onclick="copyLastResponse()" class="btn-ghost px-2.5 py-1.5 rounded-md text-xs flex items-center gap-1.5" data-tooltip="Copy last response">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            </button>
+            <button onclick="clearChat()" class="btn-ghost px-2.5 py-1.5 rounded-md text-xs flex items-center gap-1.5" data-tooltip="Clear chat">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+            <div class="h-5 w-px bg-[var(--border)] mx-1"></div>
+            <button onclick="toggleRightPanel()" class="btn-ghost px-2.5 py-1.5 rounded-md text-xs flex items-center gap-1.5">
+              <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>
+              <span>Parameters</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Chat messages -->
+        <div id="chat-messages" class="flex-1 overflow-y-auto grid-bg">
+          <div class="max-w-3xl mx-auto px-6 py-8">
+
+            <!-- Welcome state -->
+            <div id="welcome-state" class="text-center py-12">
+              <div class="inline-flex w-14 h-14 rounded-2xl bg-[var(--accent-dim)] border border-[rgba(197,248,42,0.2)] items-center justify-center mb-4 pulse-ring">
+                <i data-lucide="sparkles" class="w-6 h-6 text-[var(--accent)]"></i>
+              </div>
+              <h1 class="text-2xl font-semibold mb-2">Selamat datang di Nexus AI Studio</h1>
+              <p class="text-sm text-[var(--fg-muted)] max-w-md mx-auto mb-8">Workspace AI lengkap untuk eksperimen, prototype, dan produksi. Mulai dengan mengetik pertanyaan atau pilih template di bawah.</p>
+
+              <div class="grid grid-cols-2 gap-2 max-w-xl mx-auto">
+                <button onclick="useTemplate('code')" class="text-left p-3 rounded-lg bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent)] transition group">
+                  <div class="flex items-center gap-2 mb-1">
+                    <i data-lucide="code-2" class="w-3.5 h-3.5 text-[var(--accent)]"></i>
+                    <span class="text-xs font-medium">Generate Code</span>
+                  </div>
+                  <p class="text-[11px] text-[var(--fg-dim)]">Buat fungsi atau komponen dari spesifikasi</p>
+                </button>
+                <button onclick="useTemplate('explain')" class="text-left p-3 rounded-lg bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent)] transition group">
+                  <div class="flex items-center gap-2 mb-1">
+                    <i data-lucide="help-circle" class="w-3.5 h-3.5 text-[var(--warm)]"></i>
+                    <span class="text-xs font-medium">Explain Concept</span>
+                  </div>
+                  <p class="text-[11px] text-[var(--fg-dim)]">Pahami topik rumit dengan analogi</p>
+                </button>
+                <button onclick="useTemplate('write')" class="text-left p-3 rounded-lg bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent)] transition group">
+                  <div class="flex items-center gap-2 mb-1">
+                    <i data-lucide="pen-line" class="w-3.5 h-3.5 text-[var(--info)]"></i>
+                    <span class="text-xs font-medium">Write Content</span>
+                  </div>
+                  <p class="text-[11px] text-[var(--fg-dim)]">Draft artikel, email, atau dokumentasi</p>
+                </button>
+                <button onclick="useTemplate('analyze')" class="text-left p-3 rounded-lg bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent)] transition group">
+                  <div class="flex items-center gap-2 mb-1">
+                    <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-[var(--danger)]"></i>
+                    <span class="text-xs font-medium">Analyze Data</span>
+                  </div>
+                  <p class="text-[11px] text-[var(--fg-dim)]">Insight dan ringkasan dari data mentah</p>
+                </button>
+              </div>
+            </div>
+
+            <!-- Messages will be inserted here -->
+            <div id="messages-container" class="space-y-6"></div>
+
+            <!-- Thinking indicator -->
+            <div id="thinking-indicator" class="hidden flex items-center gap-3 text-[var(--fg-muted)] text-xs my-6">
+              <div class="flex items-center gap-1">
+                <div class="thinking-dot"></div>
+                <div class="thinking-dot"></div>
+                <div class="thinking-dot"></div>
+              </div>
+              <span id="thinking-text">Memproses permintaan...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat input -->
+        <div class="border-t border-[var(--border)] glass">
+          <div class="max-w-3xl mx-auto px-6 py-4">
+            <div class="relative">
+              <textarea
+                id="chat-input"
+                rows="3"
+                placeholder="Tanyakan apa saja... (Shift+Enter untuk baris baru, Ctrl+Enter untuk kirim)"
+                class="w-full bg-[var(--surface)] border border-[var(--border)] rounded-lg px-4 py-3 pr-32 text-sm text-[var(--fg)] placeholder-[var(--fg-dim)] resize-none transition"
+              ></textarea>
+              <div class="absolute bottom-2.5 right-2.5 flex items-center gap-1.5">
+                <button class="btn-ghost p-1.5 rounded-md" data-tooltip="Attach file">
+                  <i data-lucide="paperclip" class="w-3.5 h-3.5"></i>
+                </button>
+                <button class="btn-ghost p-1.5 rounded-md" data-tooltip="Voice input">
+                  <i data-lucide="mic" class="w-3.5 h-3.5"></i>
+                </button>
+                <button id="send-btn" onclick="sendMessage()" class="btn-accent px-3 py-1.5 rounded-md text-xs flex items-center gap-1.5">
+                  <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                  <span>Kirim</span>
+                </button>
+              </div>
+            </div>
+            <div class="flex items-center justify-between mt-2 text-[10px] text-[var(--fg-dim)] mono">
+              <div class="flex items-center gap-3">
+                <span><span id="char-count">0</span> chars</span>
+                <span>~<span id="token-count">0</span> tokens</span>
+                <span class="flex items-center gap-1">
+                  <i data-lucide="zap" class="w-3 h-3"></i>
+                  Streaming on
+                </span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span>System prompt: <span class="text-[var(--accent)]">default</span></span>
+                <button class="hover:text-[var(--fg)] transition">Edit</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ GENERATE VIEW ============ -->
+      <div id="view-generate" class="view flex-1 flex flex-col">
+        <div class="border-b border-[var(--border)] px-6 py-3 flex items-center justify-between glass">
+          <div>
+            <h2 class="text-sm font-semibold flex items-center gap-2">
+              <i data-lucide="sparkles" class="w-4 h-4 text-[var(--accent)]"></i>
+              Generation Studio
+            </h2>
+            <p class="text-[11px] text-[var(--fg-dim)] mt-0.5">Bulk generation with templated prompts</p>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button class="btn-ghost px-2.5 py-1.5 rounded-md text-xs flex items-center gap-1.5">
+              <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+              Import CSV
+            </button>
+            <button class="btn-ghost px-2.5 py-1.5 rounded-md text-xs flex items-center gap-1.5">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              Export Results
+            </button>
+          </div>
+        </div>
+        <div class="flex-1 overflow-y-auto p-6">
+          <div class="max-w-4xl mx-auto space-y-5">
+            <div class="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-5">
+              <label class="text-xs font-medium text-[var(--fg-muted)] mb-2 block">Prompt Template</label>
+              <textarea rows="4" class="w-full bg-[var(--bg)] border border-[var(--border)] rounded-md px-3 py-2 text-sm mono resize-none" placeholder="Gunakan {{variable}} untuk placeholder">Tulis deskripsi produk untuk {{product_name}} dengan target pasar {{target_audience}}. Fokus pada keunggulan {{key_feature}}.</textarea>
+              <div class="flex items-center gap-2 mt-3">
+                <span class="badge badge-info">3 variables detected</span>
+                <span class="badge badge-warm">CSV mode</span>
+              </div>
+            </div>
+
+            <div class="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-5">
+              <div class="flex items-center justify-between mb-3">
+                <label class="text-xs font-medium text-[var(--fg-muted)]">Input Data (3 rows)</label>
+                <button class="text-[11px] text-[var(--accent)] hover:underline">+ Add row</button>
+              </div>
+              <div class="space-y-2">
+                <div class="grid grid-cols-3 gap-2 text-[11px] mono text-[var(--fg-dim)] px-2">
+                  <div>product_name</div>
+                  <div>target_audience</div>
+                  <div>key_feature</div>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                  <input class="bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1.5 text-xs" value="Aurora Headphones">
+                  <input class="bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1.5 text-xs" value="Profesional muda urban">
+                  <input class="bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1.5 text-xs" value="active noise cancelling">
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                  <input class="bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1.5 text-xs" value="Zenith Smartwatch">
+                  <input class="bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1.5 text-xs" value="Atlet dan fitness enthusiast">
+                  <input class="bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1.5 text-xs" value="7-day battery life">
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                  <input class="bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1.5 text-xs" value="Nomad Backpack">
+                  <input class="bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1.5 text-xs" value="Digital nomad dan traveler">
+                  <input class="bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1.5 text-xs" value="weatherproof 30L capacity">
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <button onclick="runBatchGeneration()" class="btn-accent px-5 py-2.5 rounded-md text-sm flex items-center gap-2">
+                <i data-lucide="play" class="w-4 h-4"></i>
+                Run Batch Generation
+              </button>
+              <span class="text-[11px] text-[var(--fg-dim)] mono">Est. ~3 generations · ~2,400 tokens · cost ~$0.04</span>
+            </div>
+
+            <div id="batch-results" class="space-y-3 hidden">
+              <!-- Results akan muncul di sini -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ MODELS VIEW ============ -->
+      <div id="view-models" class="view flex-1 flex flex-col">
+        <div class="border-b border-[var(--border)] px-6 py-3 glass">
+          <h2 class="text-sm font-semibold flex items-center gap-2">
+            <i data-lucide="cpu" class="w-4 h-4 text-[var(--accent)]"></i>
+            Model Registry
+          </h2>
+          <p class="text-[11px] text-[var(--fg-dim)] mt-0.5">Pilih model yang sesuai dengan use case Anda</p>
+        </div>
+        <div class="flex-1 overflow-y-auto p-6">
+          <div class="max-w-5xl mx-auto">
+            <div class="grid grid-cols-3 gap-3 mb-6">
+              <div class="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-4">
+                <div class="text-[10px] text-[var(--fg-dim)] mono uppercase">Available</div>
+                <div class="text-2xl font-bold mt-1">12</div>
+              </div>
+              <div class="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-4">
+                <div class="text-[10px] text-[var(--fg-dim)] mono uppercase">Active</div>
+                <div class="text-2xl font-bold mt-1 text-[var(--accent)]">1</div>
+              </div>
+              <div class="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-4">
+                <div class="text-[10px] text-[var(--fg-dim)] mono uppercase">Avg latency</div>
+                <div class="text-2xl font-bold mt-1">312<span class="text-sm text-[var(--fg-muted)] ml-1">ms</span></div>
+              </div>
+            </div>
+
+            <div id="models-grid" class="grid grid-cols-2 gap-3"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ HISTORY VIEW ============ -->
+      <div id="view-history" class="view flex-1 flex flex-col">
+        <div class="border-b border-[var(--border)] px-6 py-3 flex items-center justify-between glass">
+          <div>
+            <h2 class="text-sm font-semibold flex items-center gap-2">
+              <i data-lucide="history" class="w-4 h-4 text-[var(--accent)]"></i>
+              Conversation History
+            </h2>
+            <p class="text-[11px] text-[var(--fg-dim)] mt-0.5"><span id="history-count">0</span> conversations · 7 days retention</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="relative">
+              <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--fg-dim)]"></i>
+              <input id="history-search" placeholder="Search history..." class="bg-[var(--surface)] border border-[var(--border)] rounded-md pl-8 pr-3 py-1.5 text-xs w-56">
+            </div>
+            <button class="btn-ghost px-2.5 py-1.5 rounded-md text-xs flex items-center gap-1.5">
+              <i data-lucide="filter" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+        <div class="flex-1 overflow-y-auto p-6">
+          <div id="history-list" class="max-w-4xl mx-auto space-y-2"></div>
+        </div>
+      </div>
+
+      <!-- ============ TEMPLATES VIEW ============ -->
+      <div id="view-templates" class="view flex-1 flex flex-col">
+        <div class="border-b border-[var(--border)] px-6 py-3 glass">
+          <h2 class="text-sm font-semibold flex items-center gap-2">
+            <i data-lucide="layout-template" class="w-4 h-4 text-[var(--accent)]"></i>
+            Prompt Templates
+          </h2>
+          <p class="text-[11px] text-[var(--fg-dim)] mt-0.5">Mulai cepat dengan template siap pakai</p>
+        </div>
+        <div class="flex-1 overflow-y-auto p-6">
+          <div id="templates-grid" class="max-w-5xl mx-auto grid grid-cols-3 gap-3"></div>
+        </div>
+      </div>
+
+      <!-- ============ DATASETS VIEW ============ -->
+      <div id="view-datasets" class="view flex-1 flex flex-col">
+        <div class="border-b border-[var(--border)] px-6 py-3 flex items-center justify-between glass">
+          <div>
+            <h2 class="text-sm font-semibold flex items-center gap-2">
+              <i data-lucide="database" class="w-4 h-4 text-[var(--accent)]"></i>
+              Datasets
+            </h2>
+            <p class="text-[11px] text-[var(--fg-dim)] mt-0.5">Knowledge base untuk retrieval-augmented generation</p>
+          </div>
+          <button class="btn-accent px-3 py-1.5 rounded-md text-xs flex items-center gap-1.5">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            Upload Dataset
+          </button>
+        </div>
+        <div class="flex-1 overflow-y-auto p-6">
+          <div id="datasets-list" class="max-w-4xl mx-auto space-y-2"></div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Right Panel - Parameters -->
+    <aside id="right-panel" class="w-80 border-l border-[var(--border)] bg-[var(--bg-elevated)] flex flex-col overflow-y-auto">
+      <div class="p-4 border-b border-[var(--border)] flex items-center justify-between">
+        <h3 class="text-xs font-semibold uppercase tracking-wider mono">Run Parameters</h3>
+        <button onclick="toggleRightPanel()" class="text-[var(--fg-dim)] hover:text-[var(--fg)]">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="p-4 space-y-5 flex-1">
+
+        <!-- Model Selector -->
+        <div>
+          <label class="text-[10px] uppercase tracking-wider text-[var(--fg-dim)] mono mb-2 block">Model</label>
+          <div class="relative">
+            <select id="model-select" onchange="changeModel(this.value)" class="w-full bg-[var(--surface)] border border-[var(--border)] rounded-md px-3 py-2 text-xs appearance-none cursor-pointer pr-8 mono">
+              <option value="nexus-pro-1.5">nexus-pro-1.5</option>
+              <option value="nexus-flash-2">nexus-flash-2</option>
+              <option value="nexus-vision-xl">nexus-vision-xl</option>
+              <option value="nexus-code-3">nexus-code-3</option>
+              <option value="nexus-mini">nexus-mini</option>
+            </select>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--fg-dim)] pointer-events-none"></i>
+          </div>
+          <div class="mt-2 p-2.5 rounded-md bg-[var(--surface)] border border-[var(--border)]">
+            <div class="flex items-center justify-between text-[10px] mono mb-1.5">
+              <span class="text-[var(--fg-dim)]">CAPABILITIES</span>
+            </div>
+            <div class="flex flex-wrap gap-1" id="model-capabilities">
+              <span class="badge badge-accent">chat</span>
+              <span class="badge badge-accent">code</span>
+              <span class="badge badge-accent">reasoning</span>
+              <span class="badge badge-info">128k ctx</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Temperature -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-[10px] uppercase tracking-wider text-[var(--fg-dim)] mono">Temperature</label>
+            <span id="temp-value" class="text-xs mono text-[var(--accent)]">0.70</span>
+          </div>
+          <input type="range" id="temperature" min="0" max="2" step="0.05" value="0.7" class="w-full" oninput="updateSlider('temp-value', this.value)">
+          <div class="flex justify-between text-[9px] text-[var(--fg-dim)] mono mt-1">
+            <span>precise</span>
+            <span>balanced</span>
+            <span>creative</span>
+          </div>
+        </div>
+
+        <!-- Max tokens -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-[10px] uppercase tracking-wider text-[var(--fg-dim)] mono">Max Tokens</label>
+            <span id="tokens-value" class="text-xs mono text-[var(--accent)]">2048</span>
+          </div>
+          <input type="range" id="max-tokens" min="256" max="8192" step="256" value="2048" class="w-full" oninput="updateSlider('tokens-value', this.value)">
+          <div class="flex justify-between text-[9px] text-[var(--fg-dim)] mono mt-1">
+            <span>256</span>
+            <span>4K</span>
+            <span>8K</span>
+          </div>
+        </div>
+
+        <!-- Top P -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-[10px] uppercase tracking-wider text-[var(--fg-dim)] mono">Top P</label>
+            <span id="topp-value" class="text-xs mono text-[var(--accent)]">0.90</span>
+          </div>
+          <input type="range" id="top-p" min="0" max="1" step="0.05" value="0.9" class="w-full" oninput="updateSlider('topp-value', this.value)">
+        </div>
+
+        <!-- Frequency penalty -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-[10px] uppercase tracking-wider text-[var(--fg-dim)] mono">Frequency Penalty</label>
+            <span id="freq-value" class="text-xs mono text-[var(--accent)]">0.00</span>
+          </div>
+          <input type="range" id="freq-penalty" min="-2" max="2" step="0.1" value="0" class="w-full" oninput="updateSlider('freq-value', this.value)">
+        </div>
+
+        <!-- Presence penalty -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-[10px] uppercase tracking-wider text-[var(--fg-dim)] mono">Presence Penalty</label>
+            <span id="pres-value" class="text-xs mono text-[var(--accent)]">0.00</span>
+          </div>
+          <input type="range" id="pres-penalty" min="-2" max="2" step="0.1" value="0" class="w-full" oninput="updateSlider('pres-value', this.value)">
+        </div>
+
+        <!-- Stop sequences -->
+        <div>
+          <label class="text-[10px] uppercase tracking-wider text-[var(--fg-dim)] mono mb-2 block">Stop Sequences</label>
+          <input placeholder="contoh: ###, END" class="w-full bg-[var(--surface)] border border-[var(--border)] rounded-md px-3 py-2 text-xs mono">
+        </div>
+
+        <!-- System prompt -->
+        <div>
+          <label class="text-[10px] uppercase tracking-wider text-[var(--fg-dim)] mono mb-2 block">System Prompt</label>
+          <textarea id="system-prompt" rows="4" class="w-full bg-[var(--surface)] border border-[var(--border)] rounded-md px-3 py-2 text-xs resize-none" placeholder="Define assistant behavior...">Anda adalah asisten AI yang helpful, akurat, dan ringkas. Selalu jawab dalam bahasa Indonesia kecuali diminta lain.</textarea>
+        </div>
+
+        <!-- Advanced -->
+        <details class="border-t border-[var(--border)] pt-4">
+          <summary class="text-[10px] uppercase tracking-wider text-[var(--fg-dim)] mono cursor-pointer hover:text-[var(--fg)] flex items-center gap-1">
+            <i data-lucide="chevron-right" class="w-3 h-3"></i>
+            Advanced
+          </summary>
+          <div class="space-y-3 mt-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-[var(--fg-muted)]">Stream response</span>
+              <button onclick="toggleSwitch(this)" class="switch active w-9 h-5 rounded-full bg-[var(--accent)] relative transition">
+                <span class="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black"></span>
+              </button>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-[var(--fg-muted)]">Safe mode</span>
+              <button onclick="toggleSwitch(this)" class="switch active w-9 h-5 rounded-full bg-[var(--accent)] relative transition">
+                <span class="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black"></span>
+              </button>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-[var(--fg-muted)]">Cache tokens</span>
+              <button onclick="toggleSwitch(this)" class="switch w-9 h-5 rounded-full bg-[var(--border-strong)] relative transition">
+                <span class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-[var(--fg-dim)]"></span>
+              </button>
+            </div>
+          </div>
+        </details>
+
+      </div>
+
+      <div class="p-4 border-t border-[var(--border)] space-y-2">
+        <div class="flex items-center justify-between text-[11px]">
+          <span class="text-[var(--fg-dim)] mono">Estimated cost</span>
+          <span class="mono text-[var(--accent)]" id="cost-estimate">$0.0024</span>
+        </div>
+        <div class="flex items-center justify-between text-[11px]">
+          <span class="text-[var(--fg-dim)] mono">Latency est.</span>
+          <span class="mono text-[var(--fg-muted)]" id="latency-estimate">~340ms</span>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+</div>
+
+<!-- Modal: Settings -->
+<div id="modal-settings" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop">
+  <div class="bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl w-full max-w-lg mx-4 shadow-2xl">
+    <div class="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
+      <h3 class="text-sm font-semibold">Studio Settings</h3>
+      <button onclick="toggleModal('settings')" class="text-[var(--fg-dim)] hover:text-[var(--fg)]">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+    <div class="p-5 space-y-4">
+      <div>
+        <label class="text-xs font-medium mb-1.5 block">API Key</label>
+        <input type="password" value="sk-nexus-xxxxxxxxxxxxxxxxxxxxxxx" class="w-full bg-[var(--surface)] border border-[var(--border)] rounded-md px-3 py-2 text-xs mono">
+      </div>
+      <div>
+        <label class="text-xs font-medium mb-1.5 block">Default Model</label>
+        <select class="w-full bg-[var(--surface)] border border-[var(--border)] rounded-md px-3 py-2 text-xs mono">
+          <option>nexus-pro-1.5</option>
+          <option>nexus-flash-2</option>
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs font-medium mb-1.5 block">Region</label>
+          <select class="w-full bg-[var(--surface)] border border-[var(--border)] rounded-md px-3 py-2 text-xs mono">
+            <option>asia-southeast1</option>
+            <option>us-central1</option>
+            <option>eu-west1</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs font-medium mb-1.5 block">Timeout (s)</label>
+          <input type="number" value="30" class="w-full bg-[var(--surface)] border border-[var(--border)] rounded-md px-3 py-2 text-xs mono">
+        </div>
+      </div>
+    </div>
+    <div class="px-5 py-3 border-t border-[var(--border)] flex justify-end gap-2">
+      <button onclick="toggleModal('settings')" class="btn-ghost px-3 py-1.5 rounded-md text-xs">Cancel</button>
+      <button onclick="toggleModal('settings'); showToast('Settings saved')" class="btn-accent px-3 py-1.5 rounded-md text-xs">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Shortcuts -->
+<div id="modal-shortcuts" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop">
+  <div class="bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl w-full max-w-md mx-4 shadow-2xl">
+    <div class="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
+      <h3 class="text-sm font-semibold">Keyboard Shortcuts</h3>
+      <button onclick="toggleModal('shortcuts')" class="text-[var(--fg-dim)] hover:text-[var(--fg)]">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+    <div class="p-5 space-y-2 text-xs">
+      <div class="flex justify-between py-1.5"><span class="text-[var(--fg-muted)]">Send message</span><kbd class="mono px-1.5 py-0.5 bg-[var(--surface)] rounded text-[10px]">Ctrl + Enter</kbd></div>
+      <div class="flex justify-between py-1.5"><span class="text-[var(--fg-muted)]">New line</span><kbd class="mono px-1.5 py-0.5 bg-[var(--surface)] rounded text-[10px]">Shift + Enter</kbd></div>
+      <div class="flex justify-between py-1.5"><span class="text-[var(--fg-muted)]">New conversation</span><kbd class="mono px-1.5 py-0.5 bg-[var(--surface)] rounded text-[10px]">Ctrl + K</kbd></div>
+      <div class="flex justify-between py-1.5"><span class="text-[var(--fg-muted)]">Toggle parameters</span><kbd class="mono px-1.5 py-0.5 bg-[var(--surface)] rounded text-[10px]">Ctrl + Shift + P</kbd></div>
+      <div class="flex justify-between py-1.5"><span class="text-[var(--fg-muted)]">Switch model</span><kbd class="mono px-1.5 py-0.5 bg-[var(--surface)] rounded text-[10px]">Ctrl + M</kbd></div>
+      <div class="flex justify-between py-1.5"><span class="text-[var(--fg-muted)]">Search history</span><kbd class="mono px-1.5 py-0.5 bg-[var(--surface)] rounded text-[10px]">Ctrl + /</kbd></div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container" class="fixed bottom-6 right-6 z-50 space-y-2"></div>
+
+<script>
+// =================== STATE ===================
+const state = {
+  currentView: 'chat',
+  currentModel: 'nexus-pro-1.5',
+  messages: [],
+  conversations: [],
+  isGenerating: false,
+  rightPanelOpen: true,
+  history: []
+};
+
+const models = [
+  { id: 'nexus-pro-1.5', name: 'Nexus Pro 1.5', desc: 'Model unggulan untuk task kompleks', ctx: '128K', speed: 'medium', caps: ['chat','code','reasoning','vision'], cost: '$3.50/M', selected: true },
+  { id: 'nexus-flash-2', name: 'Nexus Flash 2', desc: 'Cepat dan efisien untuk real-time', ctx: '32K', speed: 'fast', caps: ['chat','code'], cost: '$0.80/M' },
+  { id: 'nexus-vision-xl', name: 'Nexus Vision XL', desc: 'Multimodal: gambar, video, dokumen', ctx: '64K', speed: 'medium', caps: ['chat','vision','ocr'], cost: '$5.20/M' },
+  { id: 'nexus-code-3', name: 'Nexus Code 3', desc: 'Spesialis kode & debugging', ctx: '100K', speed: 'fast', caps: ['code','debug','refactor'], cost: '$1.50/M' },
+  { id: 'nexus-mini', name: 'Nexus Mini', desc: 'Ringan untuk edge & mobile', ctx: '8K', speed: 'ultra', caps: ['chat'], cost: '$0.10/M' },
+  { id: 'nexus-research', name: 'Nexus Research', desc: 'Deep reasoning & analisis panjang', ctx: '200K', speed: 'slow', caps: ['reasoning','analysis'], cost: '$8.00/M' }
+];
+
+const templates = [
+  { id: 'code', icon: 'code-2', color: 'accent', title: 'Code Generator', desc: 'Hasilkan fungsi, class, atau komponen dari spesifikasi.', prompt: 'Buatkan fungsi JavaScript untuk debounce dengan opsi leading dan trailing edge.' },
+  { id: 'explain', icon: 'help-circle', color: 'warm', title: 'Concept Explainer', desc: 'Jelaskan konsep rumit dengan analogi sederhana.', prompt: 'Jelaskan bagaimana transformer architecture bekerja dalam neural network.' },
+  { id: 'write', icon: 'pen-line', color: 'info', title: 'Content Writer', desc: 'Draft artikel, email, atau dokumentasi teknis.', prompt: 'Tulis email penawaran kerjasama B2B untuk produk SaaS.' },
+  { id: 'analyze', icon: 'bar-chart-3', color: 'danger', title: 'Data Analyzer', desc: 'Insight dan ringkasan dari data mentah.', prompt: 'Analisis tren penjualan Q3 2024 dari dataset berikut: [attach data]' },
+  { id: 'translate', icon: 'languages', color: 'accent', title: 'Smart Translator', desc: 'Terjemahan yang mempertahankan konteks budaya.', prompt: 'Terjemahkan paragraf berikut ke bahasa Inggris formal:' },
+  { id: 'summarize', icon: 'file-text', color: 'warm', title: 'Document Summarizer', desc: 'Ringkas dokumen panjang jadi poin kunci.', prompt: 'Ringkas artikel berikut dalam 5 poin utama:' }
+];
+
+const datasets = [
+  { name: 'product-catalog-2024.pdf', size: '2.4 MB', chunks: 1240, status: 'indexed', updated: '2 jam lalu' },
+  { name: 'knowledge-base-internal.md', size: '820 KB', chunks: 412, status: 'indexed', updated: '1 hari lalu' },
+  { name: 'customer-feedback-q3.csv', size: '1.1 MB', chunks: 580, status: 'processing', updated: '5 menit lalu' },
+  { name: 'api-documentation.json', size: '440 KB', chunks: 218, status: 'indexed', updated: '3 hari lalu' }
+];
+
+// =================== AI RESPONSE ENGINE ===================
+function generateAIResponse(userInput) {
+  const input = userInput.toLowerCase();
+  const temp = parseFloat(document.getElementById('temperature').value);
+  const model = state.currentModel;
+
+  // Detect intent
+  if (/halo|hai|hello|hi|selamat/.test(input) && input.length < 30) {
+    return `Halo! 👋 Saya ${model}, siap membantu Anda hari ini.\n\nSaya bisa membantu dengan:\n- **Menulis kode** dalam berbagai bahasa\n- **Menjelaskan konsep** teknis maupun umum\n- **Menganalisis data** dan memberikan insight\n- **Menulis konten** — artikel, email, dokumentasi\n\nApa yang ingin Anda kerjakan?`;
+  }
+
+  if (/buat|generate|implementasi|code|fungsi|function|komponen|class/.test(input) && /javascript|js|python|react|vue|html|css|java|go|rust|typescript|ts/.test(input)) {
+    const lang = /python/.test(input) ? 'python' : /react|jsx/.test(input) ? 'jsx' : /typescript|\bts\b/.test(input) ? 'typescript' : 'javascript';
+    return `Tentu! Berikut implementasi dalam ${lang}:\n\n\`\`\`${lang}\n${getCodeTemplate(input, lang)}\n\`\`\`\n\n**Penjelasan:**\nKode di atas menggunakan pendekatan fungsional dengan mempertimbangkan:\n1. **Immutability** — tidak mengubah state secara langsung\n2. **Type safety** — semua parameter divalidasi\n3. **Error handling** — edge cases tertangani dengan baik\n\nAnda bisa menyesuaikan parameter \`options\` sesuai kebutuhan. Apakah ada bagian yang ingin diperdalam?`;
+  }
+
+  if (/jelaskan|apa itu|bagaimana|kenapa|mengapa|explain/.test(input)) {
+    return `Pertanyaan yang bagus! Mari saya jelaskan secara bertahap.\n\n**Inti konsep:**\n${getExplanationTopic(input)}\n\n**Analogi sederhana:**\nBayangkan seperti mengatur antrian di bank — setiap permintaan diproses sesuai urutan, tapi sistem pintar bisa memprioritaskan yang lebih urgent.\n\n**Poin penting:**\n- Setiap komponen memiliki peran spesifik\n- Mereka berkomunikasi melalui protokol yang jelas\n- Failure di satu titik tidak harus merusak seluruh sistem\n\nApakah penjelasan ini cukup, atau Anda ingin saya perdalam bagian tertentu?`;
+  }
+
+  if (/tulis|buat.*artikel|draft|email|konten|content/.test(input)) {
+    return `Berikut draft yang saya buat:\n\n---\n\n${getContentDraft(input)}\n\n---\n\nDraft di atas menggunakan tone yang profesional namun engaging. Beberapa hal yang bisa Anda sesuaikan:\n- **Panjang paragraf** — bisa dipersingkat untuk readability\n- **Call-to-action** — sesuaikan dengan tujuan spesifik\n- **Personalisasi** — tambahkan nama atau konteks pribadi\n\nMau saya revisi bagian tertentu?`;
+  }
+
+  if (/analisis|analysis|data|tren|insight/.test(input)) {
+    return `Berdasarkan analisis data yang Anda berikan, berikut insight utamanya:\n\n**1. Tren Utama (+18.3% QoQ)**\nTerjadi pertumbuhan signifikan di kategori produk digital, didorong oleh kampanye Q3.\n\n**2. Pola Musiman**\n- Puncak transaksi: Jumat-Sabtu malam\n- Penurunan: awal bulan (possible: gajian cycle)\n- Recovery: pertengahan bulan\n\n**3. Segmentasi Pelanggan**\n| Segment | Kontribusi | Growth |\n|---------|-----------|--------|\n| Premium | 42% | +24% |\n| Regular | 38% | +12% |\n| New | 20% | +58% |\n\n**Rekomendasi strategis:**\n1. Tingkatkan inventory untuk kategori digital\n2. Optimalisasi promo mid-month untuk segment Regular\n3. Investasi lebih agresif di akuisisi New user\n\nMau saya buat visualisasi atau perdalam segment tertentu?`;
+  }
+
+  if (/terima kasih|thanks|makasih|tq/.test(input)) {
+    return `Sama-sama! 😊 Senang bisa membantu. Jangan ragu tanya lagi kalau ada hal lain yang ingin dieksplor.`;
+  }
+
+  if (/siapa kamu|kamu siapa|apa kamu|model apa/.test(input)) {
+    return `Saya **${model}** — model AI yang berjalan di Nexus AI Studio.\n\nSpesifikasi saya:\n- Context window: 128K tokens\n- Multimodal: text, code, dan image understanding\n- Optimized untuk: chat, reasoning, code generation\n- Knowledge cutoff: terus diperbarui\n\nSaya dirancang untuk membantu Anda dengan eksperimen, prototyping, dan produksi. Setiap percakapan di sini bisa Anda export, version, atau deploy ke production API.`;
+  }
+
+  // Default response
+  return `Saya memahami Anda bertanya tentang: "${userInput.substring(0, 80)}${userInput.length > 80 ? '...' : ''}"\n\nBerdasarkan konteksnya, ada beberapa sudut pandang yang bisa saya tawarkan:\n\n**Pertama**, dari sisi teknis — masalah ini melibatkan trade-off antara performa dan maintainability. Solusi optimal biasanya yang sederhana tapi extensible.\n\n**Kedua**, dari sisi praktis — implementasi yang baik harus mempertimbangkan:\n- Skalabilitas jangka panjang\n- Kemudahan debugging\n- Dokumentasi yang jelas\n\n**Ketiga**, dari sisi user experience — apapun pilihannya, pastikan dampak ke end user minimal atau malah positif.\n\nMau saya fokus pada aspek tertentu? Atau Anda bisa beri konteks lebih spesifik supaya jawaban saya lebih actionable.`;
+}
+
+function getCodeTemplate(input, lang) {
+  if (lang === 'python') {
+    return `from typing import List, Optional\nfrom dataclasses import dataclass\n\n@dataclass\nclass ProcessingResult:\n    success: bool\n    data: List[dict]\n    error: Optional[str] = None\n\ndef process_items(\n    items: List[dict],\n    batch_size: int = 100,\n    raise_on_error: bool = False\n) -> ProcessingResult:\n    """Process items in batches with error handling."""\n    results = []\n    \n    for i in range(0, len(items), batch_size):\n        batch = items[i:i + batch_size]\n        try:\n            processed = [transform(item) for item in batch]\n            results.extend(processed)\n        except Exception as e:\n            if raise_on_error:\n                raise\n            return ProcessingResult(False, results, str(e))\n    \n    return ProcessingResult(True, results)\n\n\ndef transform(item: dict) -> dict:\n    return {\n        **item,\n        "processed_at": __import__("time").time(),\n        "version": "1.0"\n    }`;
+  }
+  if (lang === 'jsx') {
+    return `import { useState, useEffect, useCallback } from 'react';\n\nexport function useDebounce<T>(\n  value: T,\n  delay: number = 500\n): T {\n  const [debounced, setDebounced] = useState<T>(value);\n\n  useEffect(() => {\n    const timer = setTimeout(() => {\n      setDebounced(value);\n    }, delay);\n\n    return () => clearTimeout(timer);\n  }, [value, delay]);\n\n  return debounced;\n}\n\n// Penggunaan:\n// const debouncedQuery = useDebounce(query, 300);`;
+  }
+  if (lang === 'typescript') {
+    return `type Result<T> = {\n  success: true;\n  data: T;\n} | {\n  success: false;\n  error: string;\n};\n\nasync function fetchSafe<T>(\n  url: string,\n  options?: RequestInit\n): Promise<Result<T>> {\n  try {\n    const res = await fetch(url, options);\n    if (!res.ok) {\n      return { success: false, error: \`HTTP \${res.status}\` };\n    }\n    const data = await res.json() as T;\n    return { success: true, data };\n  } catch (e) {\n    return { success: false, error: (e as Error).message };\n  }\n}`;
+  }
+  return `function debounce(fn, delay = 300, options = {}) {\n  const { leading = false, trailing = true } = options;\n  let timer = null;\n  let invoked = false;\n\n  return function (...args) {\n    if (leading && !invoked) {\n      fn.apply(this, args);\n      invoked = true;\n    }\n\n    clearTimeout(timer);\n    timer = setTimeout(() => {\n      if (trailing) fn.apply(this, args);\n      invoked = false;\n    }, delay);\n  };\n}\n\n// Contoh penggunaan\nconst handleSearch = debounce((query) => {\n  console.log('Searching:', query);\n}, 500);`;
+}
+
+function getExplanationTopic(input) {
+  if (/transformer|neural|deep learning|ai|machine learning/.test(input)) {
+    return 'Transformer adalah arsitektur neural network yang menggunakan mekanisme *self-attention* untuk memproses input secara paralel, tidak seperti RNN yang sekuensial. Ini memungkinkan model memahami konteks jangka panjang dengan lebih efisien.';
+  }
+  if (/blockchain|crypto|web3/.test(input)) {
+    return 'Blockchain adalah database terdistribusi yang menyimpan transaksi dalam blok-blok terhubung menggunakan kriptografi. Setiap blok berisi hash dari blok sebelumnya, membuatnya tamper-proof.';
+  }
+  if (/database|sql|indexing/.test(input)) {
+    return 'Indexing di database seperti indeks buku — alih-alih memindai setiap halaman, sistem melihat indeks untuk menemukan lokasi data cepat. Trade-off-nya: write lebih lambat, tapi read jauh lebih cepat.';
+  }
+  return 'Konsep ini pada dasarnya adalah tentang memecah masalah kompleks menjadi bagian-bagian yang lebih kecil dan terkelola, lalu menyusunnya kembali menjadi solusi yang kohes.';
+}
+
+function getContentDraft(input) {
+  if (/email/.test(input)) {
+    return `**Subjek: Kerjasama Strategis untuk Pertumbuhan Bersama**\n\nHalo [Nama],\n\nSemoga email ini menemukan Anda dalam keadaan baik.\n\nSaya menulis untuk memperkenalkan [Perusahaan Kami] — platform SaaS yang membantu tim seperti Anda mengotomatisasi workflow dan meningkatkan produktivitas hingga 40%.\n\nSetelah melihat profil [Perusahaan Mereka], saya melihat beberapa area potensial kolaborasi:\n- Integrasi API untuk existing stack Anda\n- Co-marketing campaign Q1 2025\n- Pilot program untuk tim engineering\n\nApakah Anda tersedia untuk brief call 15 menit minggu depan? Saya bisa flexible sesuai jadwal Anda.\n\nTerima kasih atas waktunya.\n\nSalam hangat,\n[Raafi]`;
+  }
+  return `**Judul: Panduan Praktis untuk Memulai**\n\nDi era digital yang bergerak cepat ini, kemampuan beradaptasi menjadi kunci. Artikel ini akan membahas strategi praktis yang bisa Anda terapkan segera.\n\nParagraf pembuka ini menarik perhatian pembaca dengan promise jelas: ada nilai konkret yang akan mereka dapatkan. Selanjutnya, kita bisa masuk ke poin-poin utama dengan struktur yang mudah dipindai.\n\n**Poin pertama:** mulai dari fondasi yang kuat.\n**Poin kedua:** iterasi cepat, jangan perfectionis di awal.\n**Poin ketiga:** ukur, evaluasi, tingkatkan.\n\nPenutup yang memotivasi pembaca untuk bertindak.`;
+}
+
+// =================== VIEW SWITCHING ===================
+function switchView(view) {
+  state.currentView = view;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.remove('active');
+    if (b.dataset.view === view) {
+      b.classList.add('active');
+      b.classList.remove('text-[var(--fg-muted)]');
+    } else {
+      b.classList.add('text-[var(--fg-muted)]');
+    }
+  });
+  if (view === 'history') renderHistory();
+  if (view === 'models') renderModels();
+  if (view === 'templates') renderTemplates();
+  if (view === 'datasets') renderDatasets();
+}
+
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchView(btn.dataset.view));
+});
+
+// =================== CHAT LOGIC ===================
+function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text || state.isGenerating) return;
+
+  // Hide welcome
+  document.getElementById('welcome-state').classList.add('hidden');
+
+  // Add user message
+  addMessage('user', text);
+  state.messages.push({ role: 'user', content: text });
+
+  // Clear input
+  input.value = '';
+  updateCharCount();
+
+  // Show thinking
+  showThinking();
+
+  // Generate response
+  state.isGenerating = true;
+  document.getElementById('send-btn').disabled = true;
+
+  const thinkingTime = 400 + Math.random() * 800;
+  setTimeout(() => {
+    hideThinking();
+    const response = generateAIResponse(text);
+    streamResponse(response);
+  }, thinkingTime);
+}
+
+function streamResponse(text) {
+  const container = document.getElementById('messages-container');
+  const msgEl = document.createElement('div');
+  msgEl.className = 'msg-enter';
+  msgEl.innerHTML = `
+    <div class="flex gap-3">
+      <div class="w-7 h-7 rounded-md bg-[var(--accent)] flex items-center justify-center flex-shrink-0">
+        <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 text-black" fill="currentColor">
+          <path d="M12 2L4 7v10l8 5 8-5V7l-8-5zm0 2.3l5.5 3.4v8.6L12 19.7l-5.5-3.4V7.7L12 4.3z"/>
+          <circle cx="12" cy="12" r="2.5"/>
+        </svg>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="text-xs font-semibold">Nexus AI</span>
+          <span class="badge badge-accent">${state.currentModel}</span>
+          <span class="text-[10px] text-[var(--fg-dim)] mono">just now</span>
+        </div>
+        <div class="markdown text-sm leading-relaxed text-[var(--fg)]" id="streaming-content"></div>
+        <div class="flex items-center gap-1 mt-2 opacity-0 transition" id="msg-actions">
+          <button class="text-[var(--fg-dim)] hover:text-[var(--accent)] p-1" data-tooltip="Copy" onclick="copyMessage(this)">
+            <i data-lucide="copy" class="w-3 h-3"></i>
+          </button>
+          <button class="text-[var(--fg-dim)] hover:text-[var(--accent)] p-1" data-tooltip="Regenerate">
+            <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+          </button>
+          <button class="text-[var(--fg-dim)] hover:text-[var(--accent)] p-1" data-tooltip="Good response">
+            <i data-lucide="thumbs-up" class="w-3 h-3"></i>
+          </button>
+          <button class="text-[var(--fg-dim)] hover:text-[var(--accent)] p-1" data-tooltip="Bad response">
+            <i data-lucide="thumbs-down" class="w-3 h-3"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  container.appendChild(msgEl);
+
+  const contentEl = msgEl.querySelector('#streaming-content');
+  contentEl.classList.add('typing-cursor');
+  lucide.createIcons();
+
+  // Stream character by character
+  let index = 0;
+  const chunkSize = 3; // characters per tick
+  const interval = setInterval(() => {
+    const chunk = text.substring(index, index + chunkSize);
+    index += chunkSize;
+    const partial = text.substring(0, index);
+    contentEl.innerHTML = renderMarkdown(partial);
+    
+    // Scroll to bottom
+    const chat = document.getElementById('chat-messages');
+    chat.scrollTop = chat.scrollHeight;
+
+    if (index >= text.length) {
+      clearInterval(interval);
+      contentEl.classList.remove('typing-cursor');
+      contentEl.innerHTML = renderMarkdown(text);
+      msgEl.querySelector('#msg-actions').style.opacity = '1';
+      msgEl.querySelector('#msg-actions').style.pointerEvents = 'auto';
+      lucide.createIcons();
+      
+      state.messages.push({ role: 'assistant', content: text });
+      state.isGenerating = false;
+      document.getElementById('send-btn').disabled = false;
+      updateMsgCount();
+      
+      // Save to history
+      saveToHistory();
+      
+      // Update cost estimate
+      updateCostEstimate();
+    }
+  }, 18);
+}
+
+function renderMarkdown(text) {
+  // Simple markdown rendering
+  let html = text;
+  
+  // Code blocks
+  html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+    return `<div class="code-block my-3">${highlightCode(code, lang)}</div>`;
+  });
+  
+  // Inline code
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+  
+  // Bold
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  
+  // Headers
+  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  
+  // Tables
+  if (/\|.*\|/.test(html)) {
+    html = html.replace(/\|(.+)\|/g, (match) => {
+      const cells = match.split('|').filter(c => c.trim());
+      if (cells.length === 0) return match;
+      return '<div style="display:flex;gap:1rem">' + cells.map(c => `<span style="flex:1">${c}</span>`).join('') + '</div>';
+    });
+  }
+  
+  // Lists
+  html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+  html = html.replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>');
+  
+  // Numbers
+  html = html.replace(/^\d+\.\s(.+)$/gm, '<li>$1</li>');
+  
+  // Paragraphs
+  html = html.split('\n\n').map(p => {
+    if (p.startsWith('<')) return p;
+    return `<p>${p.replace(/\n/g, '<br>')}</p>`;
+  }).join('');
+  
+  return html;
+}
+
+function highlightCode(code, lang) {
+  // Simple syntax highlighting
+  let highlighted = code
+    .replace(/\b(function|const|let|var|return|if|else|for|while|class|import|export|from|async|await|def|if|elif|else|return|import|from|class|public|private|static|void|int|string|bool|true|false|null|None|True|False)\b/g, '<span class="kw">$1</span>')
+    .replace(/(["'`])((?:\\.|(?!\1).)*)\1/g, '<span class="str">$1$2$1</span>')
+    .replace(/\/\/.*/g, '<span class="com">$&</span>')
+    .replace(/#.*$/gm, '<span class="com">$&</span>')
+    .replace(/\b(\d+\.?\d*)\b/g, '<span class="num">$1</span>');
+  
+  return highlighted;
+}
+
+function addMessage(role, content) {
+  const container = document.getElementById('messages-container');
+  const msgEl = document.createElement('div');
+  msgEl.className = 'msg-enter';
+  
+  if (role === 'user') {
+    msgEl.innerHTML = `
+      <div class="flex gap-3 flex-row-reverse">
+        <div class="w-7 h-7 rounded-md bg-gradient-to-br from-[var(--accent)] to-[var(--warm)] flex items-center justify-center flex-shrink-0 text-[10px] font-bold text-black">RA</div>
+        <div class="flex-1 min-w-0 max-w-[80%]">
+          <div class="flex items-center gap-2 mb-1.5 justify-end">
+            <span class="text-[10px] text-[var(--fg-dim)] mono">just now</span>
+            <span class="text-xs font-semibold">You</span>
+          </div>
+          <div class="bg-[var(--surface)] border border-[var(--border)] rounded-lg px-4 py-2.5 text-sm">${escapeHtml(content)}</div>
+        </div>
+      </div>
+    `;
+  }
+  
+  container.appendChild(msgEl);
+  
+  // Scroll
+  const chat = document.getElementById('chat-messages');
+  chat.scrollTop = chat.scrollHeight;
+  
+  updateMsgCount();
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function showThinking() {
+  const indicator = document.getElementById('thinking-indicator');
+  indicator.classList.remove('hidden');
+  indicator.classList.add('flex');
+  
+  const texts = [
+    'Memproses permintaan...',
+    'Menganalisis konteks...',
+    'Menyusun respons...',
+    'Mengoptimalkan output...'
+  ];
+  
+  let i = 0;
+  const textEl = document.getElementById('thinking-text');
+  window.thinkingInterval = setInterval(() => {
+    textEl.textContent = texts[i % texts.length];
+    i++;
+  }, 800);
+  
+  // Scroll
+  const chat = document.getElementById('chat-messages');
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function hideThinking() {
+  const indicator = document.getElementById('thinking-indicator');
+  indicator.classList.add('hidden');
+  indicator.classList.remove('flex');
+  clearInterval(window.thinkingInterval);
+}
+
+function updateMsgCount() {
+  const count = state.messages.length;
+  document.getElementById('msg-count').textContent = `${count} message${count !== 1 ? 's' : ''}`;
+}
+
+function updateCostEstimate() {
+  const totalTokens = state.messages.reduce((sum, m) => sum + m.content.length / 4, 0);
+  const cost = (totalTokens / 1000000 * 3.5).toFixed(4);
+  document.getElementById('cost-estimate').textContent = `$${cost}`;
+}
+
+// =================== INPUT HANDLING ===================
+const chatInput = document.getElementById('chat-input');
+chatInput.addEventListener('input', updateCharCount);
+chatInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+function updateCharCount() {
+  const text = chatInput.value;
+  document.getElementById('char-count').textContent = text.length;
+  document.getElementById('token-count').textContent = Math.ceil(text.length / 4);
+}
+
+// =================== PARAMETERS ===================
+function updateSlider(id, value) {
+  const el = document.getElementById(id);
+  const num = parseFloat(value);
+  if (id === 'temp-value' || id === 'topp-value') {
+    el.textContent = num.toFixed(2);
+  } else if (id === 'tokens-value') {
+    el.textContent = num;
+  } else {
+    el.textContent = num.toFixed(1);
+  }
+  
+  // Update latency estimate
+  const temp = parseFloat(document.getElementById('temperature').value);
+  const tokens = parseInt(document.getElementById('max-tokens').value);
+  const baseLatency = state.currentModel === 'nexus-flash-2' ? 120 : state.currentModel === 'nexus-mini' ? 80 : 280;
+  const latency = baseLatency + (tokens / 2048) * 100 + temp * 50;
+  document.getElementById('latency-estimate').textContent = `~${Math.round(latency)}ms`;
+}
+
+function changeModel(modelId) {
+  state.currentModel = modelId;
+  document.getElementById('header-model').textContent = modelId;
+  
+  const model = models.find(m => m.id === modelId);
+  const capsContainer = document.getElementById('model-capabilities');
+  capsContainer.innerHTML = model.caps.map(c => `<span class="badge badge-accent">${c}</span>`).join('') + 
+    `<span class="badge badge-info">${model.ctx} ctx</span>`;
+  
+  showToast(`Model switched to ${model.name}`);
+}
+
+function toggleSwitch(btn) {
+  btn.classList.toggle('active');
+  if (btn.classList.contains('active')) {
+    btn.classList.remove('bg-[var(--border-strong)]');
+    btn.classList.add('bg-[var(--accent)]');
+    btn.querySelector('span').classList.remove('left-0.5', 'bg-[var(--fg-dim)]');
+    btn.querySelector('span').classList.add('right-0.5', 'bg-black');
+  } else {
+    btn.classList.add('bg-[var(--border-strong)]');
+    btn.classList.remove('bg-[var(--accent)]');
+    btn.querySelector('span').classList.add('left-0.5', 'bg-[var(--fg-dim)]');
+    btn.querySelector('span').classList.remove('right-0.5', 'bg-black');
+  }
+}
+
+function toggleRightPanel() {
+  const panel = document.getElementById('right-panel');
+  panel.classList.toggle('hidden');
+  state.rightPanelOpen = !panel.classList.contains('hidden');
+}
+
+// =================== TEMPLATES ===================
+function useTemplate(type) {
+  const template = templates.find(t => t.id === type);
+  if (template) {
+    chatInput.value = template.prompt;
+    updateCharCount();
+    chatInput.focus();
+    switchView('chat');
+    showToast(`Template "${template.title}" loaded`);
+  }
+}
+
+function renderTemplates() {
+  const grid = document.getElementById('templates-grid');
+  grid.innerHTML = templates.map(t => `
+    <div onclick="useTemplate('${t.id}')" class="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-4 hover:border-[var(--accent)] transition cursor-pointer group">
+      <div class="w-9 h-9 rounded-md bg-[var(--accent-dim)] flex items-center justify-center mb-3 group-hover:scale-105 transition">
+        <i data-lucide="${t.icon}" class="w-4 h-4 text-[var(--accent)]"></i>
+      </div>
+      <h4 class="text-sm font-semibold mb-1">${t.title}</h4>
+      <p class="text-[11px] text-[var(--fg-dim)] leading-relaxed mb-3">${t.desc}</p>
+      <div class="text-[10px] text-[var(--accent)] mono flex items-center gap-1">
+        <span>Use template</span>
+        <i data-lucide="arrow-right" class="w-3 h-3"></i>
+      </div>
+    </div>
+  `).join('');
+  lucide.createIcons();
+}
+
+// =================== MODELS ===================
+function renderModels() {
+  const grid = document.getElementById('models-grid');
+  grid.innerHTML = models.map(m => `
+    <div onclick="selectModel('${m.id}')" class="model-card ${m.selected ? 'selected' : ''} bg-[var(--surface)] border ${m.selected ? 'border-[var(--accent)]' : 'border-[var(--border)]'} rounded-lg p-4">
+      <div class="flex items-start justify-between mb-2">
+        <div>
+          <div class="flex items-center gap-2">
+            <h4 class="text-sm font-semibold">${m.name}</h4>
+            ${m.selected ? '<span class="badge badge-accent">ACTIVE</span>' : ''}
+          </div>
+          <p class="text-[11px] text-[var(--fg-dim)] mt-0.5">${m.desc}</p>
+        </div>
+        <div class="text-right">
+          <div class="text-[10px] text-[var(--fg-dim)] mono">CTX</div>
+          <div class="text-xs font-semibold mono">${m.ctx}</div>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-1 mb-3">
+        ${m.caps.map(c => `<span class="badge badge-accent">${c}</span>`).join('')}
+      </div>
+      <div class="flex items-center justify-between text-[10px] mono">
+        <span class="text-[var(--fg-dim)]">Speed: <span class="text-[var(--fg-muted)]">${m.speed}</span></span>
+        <span class="text-[var(--fg-dim)]">Cost: <span class="text-[var(--warm)]">${m.cost}</span></span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectModel(id) {
+  models.forEach(m => m.selected = m.id === id);
+  document.getElementById('model-select').value = id;
+  changeModel(id);
+  renderModels();
+}
+
+// =================== HISTORY ===================
+function saveToHistory() {
+  const userMsg = state.messages.find(m => m.role === 'user');
+  if (!userMsg) return;
+  
+  const existing = state.history.find(h => h.messages === state.messages);
+  if (existing) return;
+  
+  state.history.unshift({
+    id: Date.now(),
+    title: userMsg.content.substring(0, 40) + (userMsg.content.length > 40 ? '...' : ''),
+    preview: userMsg.content.substring(0, 80),
+    model: state.currentModel,
+    messages: state.messages.slice(),
+    timestamp: new Date(),
+    msgCount: state.messages.length
+  });
+  
+  renderRecent();
+}
+
+function renderRecent() {
+  const list = document.getElementById('recent-list');
+  list.innerHTML = state.history.slice(0, 5).map(h => `
+    <button onclick="loadHistory(${h.id})" class="sidebar-item w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-r-md text-[var(--fg-muted)]">
+      <i data-lucide="message-square" class="w-3 h-3 flex-shrink-0"></i>
+      <span class="truncate">${escapeHtml(h.title)}</span>
+    </button>
+  `).join('');
+  lucide.createIcons();
+}
+
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  document.getElementById('history-count').textContent = state.history.length;
+  
+  if (state.history.length === 0) {
+    list.innerHTML = `
+      <div class="text-center py-12">
+        <div class="inline-flex w-12 h-12 rounded-xl bg-[var(--surface)] items-center justify-center mb-3">
+          <i data-lucide="inbox" class="w-5 h-5 text-[var(--fg-dim)]"></i>
+        </div>
+        <h3 class="text-sm font-medium mb-1">Belum ada history</h3>
+        <p class="text-xs text-[var(--fg-dim)]">Percakapan yang Anda lakukan akan muncul di sini</p>
+      </div>
+    `;
+    lucide.createIcons();
+    return;
+  }
+  
+  list.innerHTML = state.history.map(h => `
+    <div class="history-item group bg-[var(--surface)] border border-[var(--border)] rounded-lg p-4 hover:border-[var(--border-strong)] transition cursor-pointer">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-sm font-medium">${escapeHtml(h.title)}</span>
+            <span class="badge badge-accent">${h.model}</span>
+          </div>
+          <p class="text-xs text-[var(--fg-dim)] truncate mb-2">${escapeHtml(h.preview)}</p>
+          <div class="flex items-center gap-3 text-[10px] text-[var(--fg-dim)] mono">
+            <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i>${timeAgo(h.timestamp)}</span>
+            <span class="flex items-center gap-1"><i data-lucide="message-square" class="w-3 h-3"></i>${h.msgCount} messages</span>
+          </div>
+        </div>
+        <div class="history-actions flex items-center gap-1">
+          <button onclick="loadHistory(${h.id}); event.stopPropagation()" class="p-1.5 rounded hover:bg-[var(--surface-2)] text-[var(--fg-dim)] hover:text-[var(--accent)]" data-tooltip="Open">
+            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          </button>
+          <button onclick="deleteHistory(${h.id}); event.stopPropagation()" class="p-1.5 rounded hover:bg-[var(--surface-2)] text-[var(--fg-dim)] hover:text-[var(--danger)]" data-tooltip="Delete">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  lucide.createIcons();
+}
+
+function loadHistory(id) {
+  const h = state.history.find(x => x.id === id);
+  if (!h) return;
+  
+  state.messages = h.messages.slice();
+  document.getElementById('messages-container').innerHTML = '';
+  document.getElementById('welcome-state').classList.add('hidden');
+  
+  state.messages.forEach(m => {
+    if (m.role === 'user') {
+      addMessage('user', m.content);
+    } else {
+      const container = document.getElementById('messages-container');
+      const msgEl = document.createElement('div');
+      msgEl.className = 'msg-enter';
+      msgEl.innerHTML = `
+        <div class="flex gap-3">
+          <div class="w-7 h-7 rounded-md bg-[var(--accent)] flex items-center justify-center flex-shrink-0">
+            <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 text-black" fill="currentColor">
+              <path d="M12 2L4 7v10l8 5 8-5V7l-8-5zm0 2.3l5.5 3.4v8.6L12 19.7l-5.5-3.4V7.7L12 4.3z"/>
+              <circle cx="12" cy="12" r="2.5"/>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="text-xs font-semibold">Nexus AI</span>
+              <span class="badge badge-accent">${h.model}</span>
+            </div>
+            <div class="markdown text-sm leading-relaxed">${renderMarkdown(m.content)}</div>
+          </div>
+        </div>
+      `;
+      container.appendChild(msgEl);
+    }
+  });
+  
+  switchView('chat');
+  updateMsgCount();
+  lucide.createIcons();
+  showToast(`Loaded: ${h.title}`);
+}
+
+function deleteHistory(id) {
+  state.history = state.history.filter(h => h.id !== id);
+  renderHistory();
+  renderRecent();
+  showToast('Conversation deleted');
+}
+
+function timeAgo(date) {
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (seconds < 60) return 'just now';
+  if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+  if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+  return Math.floor(seconds / 86400) + 'd ago';
+}
+
+// =================== DATASETS ===================
+function renderDatasets() {
+  const list = document.getElementById('datasets-list');
+  list.innerHTML = datasets.map(d => `
+    <div class="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-4 hover:border-[var(--border-strong)] transition">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-md bg-[var(--accent-dim)] flex items-center justify-center flex-shrink-0">
+          <i data-lucide="${d.name.endsWith('.pdf') ? 'file-text' : d.name.endsWith('.json') ? 'file-code' : d.name.endsWith('.csv') ? 'file-spreadsheet' : 'file'}" class="w-4 h-4 text-[var(--accent)]"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-medium mono">${d.name}</span>
+            ${d.status === 'processing' ? '<span class="badge badge-warm">PROCESSING</span>' : '<span class="badge badge-accent">INDEXED</span>'}
+          </div>
+          <div class="flex items-center gap-3 text-[10px] text-[var(--fg-dim)] mono mt-1">
+            <span>${d.size}</span>
+            <span>·</span>
+            <span>${d.chunks} chunks</span>
+            <span>·</span>
+            <span>updated ${d.updated}</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-1">
+          <button class="p-1.5 rounded hover:bg-[var(--surface-2)] text-[var(--fg-dim)] hover:text-[var(--accent)]" data-tooltip="Query">
+            <i data-lucide="search" class="w-3.5 h-3.5"></i>
+          </button>
+          <button class="p-1.5 rounded hover:bg-[var(--surface-2)] text-[var(--fg-dim)] hover:text-[var(--danger)]" data-tooltip="Remove">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      </div>
+      ${d.status === 'processing' ? `
+        <div class="meter-track mt-3">
+          <div class="meter-fill" style="width: 67%"></div>
+        </div>
+      ` : ''}
+    </div>
+  `).join('');
+  lucide.createIcons();
+}
+
+// =================== BATCH GENERATION ===================
+function runBatchGeneration() {
+  const results = document.getElementById('batch-results');
+  results.classList.remove('hidden');
+  results.innerHTML = '<div class="text-xs text-[var(--fg-muted)] py-4 flex items-center gap-2"><div class="thinking-dot"></div><div class="thinking-dot"></div><div class="thinking-dot"></div> Generating 3 results...</div>';
+  
+  setTimeout(() => {
+    results.innerHTML = `
+      <div class="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-4 fade-in">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="badge badge-info">1/3</span>
+          <span class="text-xs font-medium">Aurora Headphones</span>
+        </div>
+        <p class="text-xs text-[var(--fg-muted)] leading-relaxed">Rasakan keajaiban suara murni dengan Aurora Headphones. Dirancang untuk profesional muda urban yang tidak kompromi pada kualitas. Teknologi <strong>active noise cancelling</strong> tercanggih mengisolasi Anda dari kebisingan kota, membiarkan fokus Anda mengalir tanpa gangguan.</p>
+      </div>
+      <div class="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-4 fade-in" style="animation-delay: 0.1s">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="badge badge-info">2/3</span>
+          <span class="text-xs font-medium">Zenith Smartwatch</span>
+        </div>
+        <p class="text-xs text-[var(--fg-muted)] leading-relaxed">Zenith Smartwatch — pendamping ultimate untuk atlet dan fitness enthusiast. Dengan <strong>7-day battery life</strong> yang luar biasa, jam tangan ini menemani setiap perjalanan tanpa khawatir charging. Tracking presisi, analitik mendalam, performa tanpa batas.</p>
+      </div>
+      <div class="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-4 fade-in" style="animation-delay: 0.2s">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="badge badge-info">3/3</span>
+          <span class="text-xs font-medium">Nomad Backpack</span>
+        </div>
+        <p class="text-xs text-[var(--fg-muted)] leading-relaxed">Nomad Backpack — freedom to roam. Weatherproof 30L capacity yang siap menemani digital nomad dan traveler sejati. Setiap detail dirancang untuk perjalanan: kompartemen laptop terlindungi, akses cepat, dan material tahan segala cuaca.</p>
+      </div>
+      <div class="text-[10px] text-[var(--fg-dim)] mono text-center pt-2">Completed in 2.3s · 2,431 tokens · $0.038</div>
+    `;
+    showToast('Batch generation complete');
+  }, 2200);
+}
+
+// =================== UTILITIES ===================
+function newConversation() {
+  state.messages = [];
+  document.getElementById('messages-container').innerHTML = '';
+  document.getElementById('welcome-state').classList.remove('hidden');
+  document.getElementById('chat-title').textContent = 'Untitled Conversation';
+  updateMsgCount();
+  switchView('chat');
+  chatInput.focus();
+  showToast('New conversation created');
+}
+
+function clearChat() {
+  if (state.messages.length === 0) return;
+  state.messages = [];
+  document.getElementById('messages-container').innerHTML = '';
+  document.getElementById('welcome-state').classList.remove('hidden');
+  updateMsgCount();
+  showToast('Chat cleared');
+}
+
+function copyLastResponse() {
+  if (state.messages.length === 0) {
+    showToast('No response to copy', 'warn');
+    return;
+  }
+  const lastAssistant = [...state.messages].reverse().find(m => m.role === 'assistant');
+  if (lastAssistant) {
+    navigator.clipboard.writeText(lastAssistant.content);
+    showToast('Copied to clipboard');
+  }
+}
+
+function copyMessage(btn) {
+  const content = btn.closest('.flex.gap-3').querySelector('.markdown').textContent;
+  navigator.clipboard.writeText(content);
+  showToast('Copied to clipboard');
+}
+
+function exportConversation() {
+  if (state.messages.length === 0) {
+    showToast('No conversation to export', 'warn');
+    return;
+  }
+  const data = {
+    model: state.currentModel,
+    timestamp: new Date().toISOString(),
+    messages: state.messages
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `conversation-${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Conversation exported');
+}
+
+function toggleModal(name) {
+  const modal = document.getElementById('modal-' + name);
+  modal.classList.toggle('hidden');
+  modal.classList.toggle('flex');
+}
+
+function showToast(message, type = 'success') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast bg-[var(--bg-elevated)] border border-[var(--border)] rounded-lg px-4 py-2.5 shadow-2xl flex items-center gap-2.5 min-w-[200px]';
+  
+  const colors = {
+    success: 'text-[var(--accent)]',
+    warn: 'text-[var(--warm)]',
+    error: 'text-[var(--danger)]'
+  };
+  const icons = {
+    success: 'check-circle',
+    warn: 'alert-triangle',
+    error: 'x-circle'
+  };
+  
+  toast.innerHTML = `
+    <i data-lucide="${icons[type]}" class="w-4 h-4 ${colors[type]}"></i>
+    <span class="text-xs">${message}</span>
+  `;
+  container.appendChild(toast);
+  lucide.createIcons();
+  
+  setTimeout(() => {
+    toast.style.transition = 'all 0.3s';
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(20px)';
+    setTimeout(() => toast.remove(), 300);
+  }, 2500);
+}
+
+// History search
+document.getElementById('history-search')?.addEventListener('input', (e) => {
+  const query = e.target.value.toLowerCase();
+  const items = document.querySelectorAll('#history-list .history-item');
+  items.forEach(item => {
+    const text = item.textContent.toLowerCase();
+    item.style.display = text.includes(query) ? '' : 'none';
+  });
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    newConversation();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'P') {
+    e.preventDefault();
+    toggleRightPanel();
+  }
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-backdrop').forEach(m => {
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+    });
+  }
+});
+
+// =================== INIT ===================
+window.addEventListener('DOMContentLoaded', () => {
+  lucide.createIcons();
+  renderRecent();
+  updateCharCount();
+  
+  // Initialize with a demo conversation
+  setTimeout(() => {
+    showToast('Welcome to Nexus AI Studio');
+  }, 500);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STOCKARD — Stock Management Inventory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d1b1e;
+    --surface:#122629;
+    --surface-2:#1a343a;
+    --border:#254349;
+    --text:#eaf2f1;
+    --text-dim:#8fa8a8;
+    --text-faint:#5a7574;
+    --gold:#e3a857;
+    --gold-dim:#3a3016;
+    --green:#4fcb8f;
+    --green-dim:#153b2c;
+    --red:#ff6b6b;
+    --red-dim:#3d1f1f;
+    --blue:#5fb4e0;
+    --font-display:'Bitter',serif;
+    --font-body:'Inter',sans-serif;
+    --font-mono:'Space Mono',monospace;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  ::selection{background:var(--gold);color:#1a1305;}
+  img{max-width:100%;}
+
+  /* ---------- BACK-TO-PORTFOLIO BUTTON ---------- */
+  .back-nav{position:fixed;top:12px;left:12px;z-index:300;}
+  .back-nav a{
+    display:inline-flex;align-items:center;gap:7px;
+    background:var(--surface-2);border:1px solid var(--border);
+    color:var(--text-dim);text-decoration:none;
+    font-family:var(--font-body);font-weight:600;font-size:12.5px;
+    padding:7px 12px 7px 9px;border-radius:20px;
+    box-shadow:0 6px 18px rgba(0,0,0,.35);
+    transition:background .12s,color .12s,border-color .12s,transform .08s;
+  }
+  .back-nav a svg{width:14px;height:14px;stroke:currentColor;flex-shrink:0;}
+  .back-nav a:hover{background:var(--surface);color:var(--gold);border-color:#33555c;}
+  .back-nav a:active{transform:translateY(1px);}
+
+  /* ---------- TOP NAVBAR ---------- */
+  .topnav{
+    display:flex;align-items:center;justify-content:space-between;gap:20px;
+    padding:14px 28px 14px 78px;
+    background:var(--surface);border-bottom:1px solid var(--border);
+    position:sticky;top:0;z-index:50;flex-wrap:wrap;
+  }
+  .nav-left{display:flex;align-items:center;gap:26px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-mark{
+    width:32px;height:32px;border-radius:6px;background:var(--gold);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    position:relative;
+  }
+  .brand-mark svg{width:18px;height:18px;stroke:#1a1305;}
+  .brand-text .title{font-family:var(--font-display);font-size:17px;font-weight:700;letter-spacing:.3px;}
+  .brand-text .sub{font-family:var(--font-mono);font-size:9.5px;color:var(--text-faint);letter-spacing:1.5px;margin-top:1px;}
+
+  .nav-tabs{display:flex;gap:4px;}
+  .nav-tab{
+    font-size:13px;font-weight:600;color:var(--text-dim);
+    padding:8px 13px;border-radius:7px;cursor:pointer;
+    border-bottom:2px solid transparent;transition:background .12s,color .12s;
+  }
+  .nav-tab:hover{background:var(--surface-2);color:var(--text);}
+  .nav-tab.active{color:var(--gold);background:var(--surface-2);}
+
+  .nav-right{display:flex;align-items:center;gap:10px;}
+  .search-box{
+    display:flex;align-items:center;gap:8px;
+    background:var(--surface-2);border:1px solid var(--border);
+    padding:8px 12px;border-radius:20px;width:230px;
+  }
+  .search-box svg{width:14px;height:14px;stroke:var(--text-faint);flex-shrink:0;}
+  .search-box input{background:none;border:none;outline:none;color:var(--text);font-size:13px;width:100%;font-family:var(--font-body);}
+  .search-box input::placeholder{color:var(--text-faint);}
+
+  .btn{
+    display:inline-flex;align-items:center;gap:6px;
+    font-family:var(--font-body);font-weight:700;font-size:13px;
+    padding:9px 16px;border-radius:20px;border:1px solid transparent;
+    cursor:pointer;transition:transform .08s, filter .12s, background .12s;white-space:nowrap;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn svg{width:14px;height:14px;}
+  .btn-primary{background:var(--gold);color:#1a1305;}
+  .btn-primary:hover{filter:brightness(1.08);}
+  .btn-ghost{background:var(--surface-2);color:var(--text);border-color:var(--border);}
+  .btn-ghost:hover{background:#20444c;}
+  .btn-danger{background:var(--red-dim);color:var(--red);border-color:#4a2424;}
+  .btn-danger:hover{background:#4a2424;}
+
+  .content{padding:26px 28px 60px;max-width:1320px;margin:0 auto;}
+  .section-head{margin-bottom:16px;}
+  .section-head .eyebrow{font-family:var(--font-mono);font-size:10.5px;color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;}
+  .section-head h1{font-family:var(--font-display);font-size:24px;font-weight:700;margin-top:3px;}
+
+  /* ---------- STAT CARDS ---------- */
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+  .stat-card{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    padding:16px 18px;position:relative;overflow:hidden;
+  }
+  .stat-card .stat-label{font-family:var(--font-mono);font-size:10px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;}
+  .stat-card .stat-value{font-family:var(--font-display);font-size:26px;font-weight:700;margin-top:6px;}
+  .stat-card .stat-sub{font-size:11.5px;color:var(--text-dim);margin-top:4px;}
+  .stat-card.warn .stat-value{color:var(--gold);}
+  .stat-card.danger .stat-value{color:var(--red);}
+  .stat-card.good .stat-value{color:var(--green);}
+  .stat-card::after{
+    content:'';position:absolute;right:-8px;top:-8px;width:16px;height:16px;
+    border-radius:50%;background:var(--bg);border:1px solid var(--border);
+  }
+  .stat-card::before{
+    content:'';position:absolute;right:-8px;bottom:-8px;width:16px;height:16px;
+    border-radius:50%;background:var(--bg);border:1px solid var(--border);
+  }
+
+  /* ---------- LAYOUT ---------- */
+  .grid-2{display:grid;grid-template-columns:2.1fr 1fr;gap:18px;align-items:start;}
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);}
+  .panel-head h2{font-family:var(--font-display);font-size:15px;font-weight:700;letter-spacing:.2px;}
+  .count-pill{font-family:var(--font-mono);font-size:10.5px;color:var(--text-dim);background:var(--surface-2);padding:3px 9px;border-radius:20px;}
+
+  /* ---------- CATEGORY FILTER CHIPS (price-tag style) ---------- */
+  .chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+  .chip{
+    position:relative;
+    font-family:var(--font-mono);font-size:11.5px;font-weight:700;
+    color:var(--text-dim);background:var(--surface);border:1px solid var(--border);
+    padding:6px 14px 6px 20px;border-radius:3px;cursor:pointer;
+    clip-path:polygon(10px 0,100% 0,100% 100%,10px 100%,0 50%);
+    transition:background .12s,color .12s,border-color .12s;
+  }
+  .chip:hover{color:var(--text);}
+  .chip.active{background:var(--gold-dim);color:var(--gold);border-color:#5a4a24;}
+
+  /* ---------- TABLE ---------- */
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{
+    text-align:left;padding:10px 18px;font-family:var(--font-mono);font-size:10px;
+    color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;
+    border-bottom:1px solid var(--border);background:var(--surface-2);
+  }
+  tbody td{padding:12px 18px;border-bottom:1px solid var(--border);vertical-align:middle;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:rgba(255,255,255,.02);}
+  .sku{font-family:var(--font-mono);font-size:11.5px;color:var(--text-faint);}
+  .item-name{font-weight:700;font-size:13.5px;}
+  .cat-tag{
+    font-size:10.5px;font-family:var(--font-mono);padding:3px 9px;border-radius:3px;
+    background:var(--surface-2);color:var(--text-dim);white-space:nowrap;border:1px solid var(--border);
+  }
+  .price-cell{font-family:var(--font-mono);font-size:12.5px;}
+  .qty-cell{font-family:var(--font-mono);font-size:13px;font-weight:700;}
+  .value-cell{font-family:var(--font-mono);font-size:12.5px;color:var(--text-dim);}
+
+  .status-pill{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;
+  }
+  .status-pill::before{content:'';width:6px;height:6px;border-radius:50%;}
+  .status-pill.ok{background:var(--green-dim);color:var(--green);}
+  .status-pill.ok::before{background:var(--green);}
+  .status-pill.warn{background:var(--gold-dim);color:var(--gold);}
+  .status-pill.warn::before{background:var(--gold);}
+  .status-pill.crit{background:var(--red-dim);color:var(--red);}
+  .status-pill.crit::before{background:var(--red);}
+
+  .row-actions{display:flex;gap:6px;justify-content:flex-end;}
+  .icon-btn{
+    width:28px;height:28px;border-radius:6px;border:1px solid var(--border);
+    background:var(--surface-2);display:flex;align-items:center;justify-content:center;
+    cursor:pointer;transition:background .12s,border-color .12s;
+  }
+  .icon-btn svg{width:14px;height:14px;stroke:var(--text-dim);}
+  .icon-btn:hover{background:#20444c;border-color:#33555c;}
+  .icon-btn.in:hover svg{stroke:var(--green);}
+  .icon-btn.out:hover svg{stroke:var(--gold);}
+  .icon-btn.del:hover svg{stroke:var(--red);}
+  .icon-btn.del:hover{border-color:#4a2424;background:var(--red-dim);}
+  .empty-row td{padding:40px 18px;text-align:center;color:var(--text-faint);font-size:13px;}
+
+  /* ---------- STOCK VALUE BY CATEGORY (signature chart) ---------- */
+  .value-bars{padding:16px 18px;display:flex;flex-direction:column;gap:14px;}
+  .value-bar-row .vb-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;}
+  .value-bar-row .vb-label{font-weight:600;color:var(--text);}
+  .value-bar-row .vb-amount{font-family:var(--font-mono);color:var(--text-dim);font-size:11.5px;}
+  .value-bar-track{height:8px;background:var(--surface-2);border-radius:20px;overflow:hidden;border:1px solid var(--border);}
+  .value-bar-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--gold),#f0c27b);}
+
+  /* ---------- LEDGER (transactions) ---------- */
+  .ledger{padding:4px 0;max-height:420px;overflow-y:auto;}
+  .ledger-item{padding:11px 18px;border-bottom:1px dashed var(--border);display:flex;flex-direction:column;gap:3px;}
+  .ledger-item:last-child{border-bottom:none;}
+  .ledger-top{display:flex;justify-content:space-between;align-items:center;}
+  .ledger-tag{font-family:var(--font-mono);font-size:10px;letter-spacing:.5px;padding:2px 7px;border-radius:3px;font-weight:700;}
+  .ledger-tag.masuk{background:var(--green-dim);color:var(--green);}
+  .ledger-tag.keluar{background:var(--gold-dim);color:var(--gold);}
+  .ledger-time{font-family:var(--font-mono);font-size:10.5px;color:var(--text-faint);}
+  .ledger-name{font-size:12.5px;font-weight:700;}
+  .ledger-note{font-size:11px;color:var(--text-dim);}
+  .ledger-empty{padding:40px 18px;text-align:center;color:var(--text-faint);font-size:12.5px;}
+
+  /* ---------- MODAL ---------- */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(4,10,11,.68);display:none;align-items:center;justify-content:center;z-index:100;padding:20px;}
+  .modal-backdrop.show{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;width:430px;max-width:100%;overflow:hidden;animation:pop .14s ease;}
+  @keyframes pop{from{transform:scale(.97);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .modal-head h3{font-family:var(--font-display);font-size:16px;font-weight:700;}
+  .modal-close{cursor:pointer;color:var(--text-faint);font-size:20px;line-height:1;background:none;border:none;}
+  .modal-close:hover{color:var(--text);}
+  .modal-body{padding:18px 20px;display:flex;flex-direction:column;gap:14px;}
+  .field label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:6px;font-weight:600;}
+  .field input,.field select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:9px 11px;color:var(--text);font-size:13.5px;font-family:var(--font-body);outline:none;}
+  .field input:focus,.field select:focus{border-color:var(--gold);}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .modal-foot{padding:14px 20px 18px;display:flex;justify-content:flex-end;gap:10px;border-top:1px solid var(--border);}
+  .stock-context{background:var(--surface-2);border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-size:12.5px;color:var(--text-dim);}
+  .stock-context b{color:var(--text);}
+
+  /* ---------- TOAST ---------- */
+  .toast-wrap{position:fixed;bottom:22px;right:22px;display:flex;flex-direction:column;gap:8px;z-index:200;}
+  .toast{
+    background:var(--surface-2);border:1px solid var(--border);border-left:3px solid var(--green);
+    padding:11px 16px;border-radius:7px;font-size:13px;min-width:230px;
+    box-shadow:0 8px 24px rgba(0,0,0,.4);animation:slidein .18s ease;
+  }
+  .toast.warn{border-left-color:var(--gold);}
+  .toast.danger{border-left-color:var(--red);}
+  @keyframes slidein{from{transform:translateX(20px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+
+  button:focus-visible, input:focus-visible, select:focus-visible, .nav-tab:focus-visible, .chip:focus-visible{
+    outline:2px solid var(--gold);outline-offset:2px;
+  }
+
+  @media(max-width:980px){
+    .stat-grid{grid-template-columns:repeat(2,1fr);}
+    .grid-2{grid-template-columns:1fr;}
+    .topnav{padding-left:60px;}
+    .search-box{width:150px;}
+    .nav-tabs{order:3;width:100%;}
+  }
+</style>
+</head>
+<body>
+
+<div class="back-nav">
+  <a href="why_portofolio.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Kembali
+  </a>
+</div>
+
+<div class="topnav">
+  <div class="nav-left">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7 12 3 4 7v10l8 4 8-4V7z"/><path d="M4 7l8 4 8-4"/><path d="M12 11v10"/></svg>
+      </div>
+      <div class="brand-text">
+        <div class="title">STOCKARD</div>
+        <div class="sub">INVENTORY LEDGER</div>
+      </div>
+    </div>
+    <div class="nav-tabs">
+      <div class="nav-tab active" data-view="dashboard">Dashboard</div>
+      <div class="nav-tab" data-view="catalog">Katalog Produk</div>
+      <div class="nav-tab" data-view="ledger">Riwayat Stok</div>
+    </div>
+  </div>
+  <div class="nav-right">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="searchInput" placeholder="Cari produk atau SKU...">
+    </div>
+    <button class="btn btn-primary" id="openAddItem">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      Tambah Produk
+    </button>
+  </div>
+</div>
+
+<div class="content">
+
+  <div class="section-head">
+    <div class="eyebrow" id="pageEyebrow">RINGKASAN STOK</div>
+    <h1 id="pageTitle">Dashboard Inventory</h1>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total Produk</div>
+      <div class="stat-value" id="statCount">0</div>
+      <div class="stat-sub">SKU aktif terdaftar</div>
+    </div>
+    <div class="stat-card good">
+      <div class="stat-label">Nilai Total Stok</div>
+      <div class="stat-value" id="statValue">Rp 0</div>
+      <div class="stat-sub">Harga × kuantitas</div>
+    </div>
+    <div class="stat-card warn">
+      <div class="stat-label">Stok Menipis</div>
+      <div class="stat-value" id="statLow">0</div>
+      <div class="stat-sub">Di bawah batas minimum</div>
+    </div>
+    <div class="stat-card danger">
+      <div class="stat-label">Stok Habis</div>
+      <div class="stat-value" id="statOut">0</div>
+      <div class="stat-sub">Perlu restock segera</div>
+    </div>
+  </div>
+
+  <div class="chip-row" id="categoryChips"></div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Katalog Produk</h2>
+        <span class="count-pill" id="invCount">0 produk</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Produk / SKU</th>
+            <th>Kategori</th>
+            <th>Harga</th>
+            <th>Stok</th>
+            <th>Nilai Stok</th>
+            <th>Status</th>
+            <th style="text-align:right;">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="inventoryBody"></tbody>
+      </table>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:18px;">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Nilai Stok per Kategori</h2>
+        </div>
+        <div class="value-bars" id="valueBars"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Riwayat Stok</h2>
+          <span class="count-pill" id="txCount">0 entri</span>
+        </div>
+        <div class="ledger" id="ledgerList"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal: Tambah Produk -->
+<div class="modal-backdrop" id="modalItem">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Tambah Produk</h3>
+      <button class="modal-close" data-close>&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Nama Produk</label>
+        <input type="text" id="fName" placeholder="Contoh: Kemeja Flanel Pria">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>SKU</label>
+          <input type="text" id="fSku" placeholder="SKU-P001">
+        </div>
+        <div class="field">
+          <label>Kategori</label>
+          <select id="fCategory">
+            <option>Fashion</option>
+            <option>Aksesoris</option>
+            <option>Elektronik</option>
+            <option>Kebutuhan Rumah</option>
+            <option>Lainnya</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Harga Satuan (Rp)</label>
+          <input type="number" id="fPrice" min="0" value="0">
+        </div>
+        <div class="field">
+          <label>Stok Awal</label>
+          <input type="number" id="fQty" min="0" value="0">
+        </div>
+      </div>
+      <div class="field">
+        <label>Stok Minimum</label>
+        <input type="number" id="fMin" min="0" value="10">
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close>Batal</button>
+      <button class="btn btn-primary" id="saveItemBtn">Simpan Produk</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Stok Masuk / Keluar -->
+<div class="modal-backdrop" id="modalStock">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalStockTitle">Stok Masuk</h3>
+      <button class="modal-close" data-close>&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="stock-context" id="stockContext"></div>
+      <div class="field">
+        <label id="stockQtyLabel">Jumlah</label>
+        <input type="number" id="fStockQty" min="1" value="1">
+      </div>
+      <div class="field">
+        <label>Catatan (opsional)</label>
+        <input type="text" id="fStockNote" placeholder="Contoh: Restock dari supplier">
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close>Batal</button>
+      <button class="btn btn-primary" id="confirmStockBtn">Konfirmasi</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Hapus -->
+<div class="modal-backdrop" id="modalDelete">
+  <div class="modal" style="width:360px;">
+    <div class="modal-head">
+      <h3>Hapus Produk?</h3>
+      <button class="modal-close" data-close>&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13.5px;color:var(--text-dim);">Produk <b id="deleteItemName" style="color:var(--text);"></b> akan dihapus permanen dari katalog. Tindakan ini tidak dapat dibatalkan.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close>Batal</button>
+      <button class="btn btn-danger" id="confirmDeleteBtn">Ya, Hapus</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- STATE ---------------- */
+  let items = [
+    {id:1, sku:'SKU-P001', name:'Kemeja Flanel Pria', category:'Fashion', price:149000, qty:85, min:20},
+    {id:2, sku:'SKU-P002', name:'Sepatu Sneakers Putih', category:'Fashion', price:329000, qty:12, min:15},
+    {id:3, sku:'SKU-P003', name:'Tas Ransel Laptop', category:'Aksesoris', price:259000, qty:40, min:10},
+    {id:4, sku:'SKU-P004', name:'Kaos Polos Cotton', category:'Fashion', price:79000, qty:200, min:50},
+    {id:5, sku:'SKU-P005', name:'Jam Tangan Analog', category:'Aksesoris', price:450000, qty:5, min:10},
+    {id:6, sku:'SKU-P006', name:'Topi Baseball', category:'Aksesoris', price:65000, qty:0, min:20},
+    {id:7, sku:'SKU-P007', name:'Celana Jeans Slim Fit', category:'Fashion', price:219000, qty:60, min:20},
+    {id:8, sku:'SKU-P008', name:'Dompet Kulit Pria', category:'Aksesoris', price:175000, qty:33, min:15},
+    {id:9, sku:'SKU-P009', name:'Jaket Hoodie', category:'Fashion', price:259000, qty:18, min:20},
+    {id:10, sku:'SKU-P010', name:'Ikat Pinggang Kulit', category:'Aksesoris', price:99000, qty:70, min:20}
+  ];
+
+  let transactions = [
+    {id:1, type:'masuk', name:'Kemeja Flanel Pria', qty:30, note:'Restock dari supplier utama', time: Date.now()-1000*60*50},
+    {id:2, type:'keluar', name:'Jam Tangan Analog', qty:7, note:'Penjualan toko cabang', time: Date.now()-1000*60*120},
+    {id:3, type:'keluar', name:'Topi Baseball', qty:20, note:'Penjualan habis terjual', time: Date.now()-1000*60*200}
+  ];
+
+  let nextItemId = 11;
+  let nextTxId = 4;
+  let searchTerm = '';
+  let currentView = 'dashboard';
+  let activeCategory = 'Semua';
+  let stockContextItemId = null;
+  let stockContextType = null;
+  let deleteContextId = null;
+
+  /* ---------------- HELPERS ---------------- */
+  function statusOf(item){
+    if(item.qty <= 0) return 'crit';
+    if(item.qty <= item.min) return 'warn';
+    return 'ok';
+  }
+  function statusLabel(s){ return s==='crit' ? 'Habis' : s==='warn' ? 'Menipis' : 'Aman'; }
+  function fmtNum(n){ return n.toLocaleString('id-ID'); }
+  function fmtRp(n){ return 'Rp ' + Math.round(n).toLocaleString('id-ID'); }
+  function fmtTime(ts){
+    const d = new Date(ts), now = new Date();
+    const sameDay = d.toDateString() === now.toDateString();
+    const time = d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+    return sameDay ? time : d.toLocaleDateString('id-ID',{day:'2-digit',month:'short'}) + ' · ' + time;
+  }
+  function stockValue(item){ return item.price * item.qty; }
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str == null ? '' : String(str);
+    return div.innerHTML;
+  }
+
+  function toast(msg, kind){
+    const wrap = document.getElementById('toastWrap');
+    const el = document.createElement('div');
+    el.className = 'toast' + (kind ? ' '+kind : '');
+    el.textContent = msg;
+    wrap.appendChild(el);
+    setTimeout(()=>{ el.style.transition='opacity .2s'; el.style.opacity='0'; setTimeout(()=>el.remove(),200); }, 2600);
+  }
+
+  /* ---------------- RENDER: STATS ---------------- */
+  function renderStats(){
+    document.getElementById('statCount').textContent = items.length;
+    document.getElementById('statValue').textContent = fmtRp(items.reduce((a,i)=>a+stockValue(i),0));
+    document.getElementById('statLow').textContent = items.filter(i=>statusOf(i)==='warn').length;
+    document.getElementById('statOut').textContent = items.filter(i=>statusOf(i)==='crit').length;
+  }
+
+  /* ---------------- RENDER: CATEGORY CHIPS ---------------- */
+  function renderChips(){
+    const cats = ['Semua', ...new Set(items.map(i=>i.category))];
+    const wrap = document.getElementById('categoryChips');
+    wrap.innerHTML = cats.map(c=>`<div class="chip ${c===activeCategory?'active':''}" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</div>`).join('');
+    wrap.querySelectorAll('.chip').forEach(chip=>{
+      chip.addEventListener('click', ()=>{
+        activeCategory = chip.dataset.cat;
+        renderChips();
+        renderInventory();
+      });
+    });
+  }
+
+  /* ---------------- RENDER: INVENTORY TABLE ---------------- */
+  function getFiltered(){
+    const term = searchTerm.trim().toLowerCase();
+    return items.filter(i=>{
+      const matchTerm = !term || i.name.toLowerCase().includes(term) || i.sku.toLowerCase().includes(term) || i.category.toLowerCase().includes(term);
+      const matchCat = activeCategory === 'Semua' || i.category === activeCategory;
+      return matchTerm && matchCat;
+    });
+  }
+
+  function renderInventory(){
+    const tbody = document.getElementById('inventoryBody');
+    const filtered = getFiltered();
+    document.getElementById('invCount').textContent = filtered.length + ' produk';
+
+    if(filtered.length === 0){
+      tbody.innerHTML = `<tr class="empty-row"><td colspan="7">Tidak ada produk yang cocok dengan pencarian atau filter kategori.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(item=>{
+      const s = statusOf(item);
+      return `
+      <tr data-id="${item.id}">
+        <td>
+          <div class="item-name">${escapeHtml(item.name)}</div>
+          <div class="sku">${escapeHtml(item.sku)}</div>
+        </td>
+        <td><span class="cat-tag">${escapeHtml(item.category)}</span></td>
+        <td class="price-cell">${fmtRp(item.price)}</td>
+        <td class="qty-cell">${fmtNum(item.qty)}</td>
+        <td class="value-cell">${fmtRp(stockValue(item))}</td>
+        <td><span class="status-pill ${s}">${statusLabel(s)}</span></td>
+        <td>
+          <div class="row-actions">
+            <button class="icon-btn in" title="Stok Masuk" data-action="in" data-id="${item.id}">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            </button>
+            <button class="icon-btn out" title="Stok Keluar" data-action="out" data-id="${item.id}">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+            </button>
+            <button class="icon-btn del" title="Hapus" data-action="delete" data-id="${item.id}">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>
+            </button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  /* ---------------- RENDER: VALUE BY CATEGORY ---------------- */
+  function renderValueBars(){
+    const wrap = document.getElementById('valueBars');
+    const byCat = {};
+    items.forEach(i=>{ byCat[i.category] = (byCat[i.category]||0) + stockValue(i); });
+    const entries = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+    const max = entries.length ? entries[0][1] : 1;
+    if(entries.length === 0){
+      wrap.innerHTML = `<div class="ledger-empty">Belum ada data produk.</div>`;
+      return;
+    }
+    wrap.innerHTML = entries.map(([cat, val])=>`
+      <div class="value-bar-row">
+        <div class="vb-top"><span class="vb-label">${escapeHtml(cat)}</span><span class="vb-amount">${fmtRp(val)}</span></div>
+        <div class="value-bar-track"><div class="value-bar-fill" style="width:${Math.max(4,(val/max*100))}%;"></div></div>
+      </div>
+    `).join('');
+  }
+
+  /* ---------------- RENDER: LEDGER ---------------- */
+  function renderLedger(){
+    const list = document.getElementById('ledgerList');
+    document.getElementById('txCount').textContent = transactions.length + ' entri';
+    if(transactions.length === 0){
+      list.innerHTML = `<div class="ledger-empty">Belum ada transaksi stok masuk atau keluar.</div>`;
+      return;
+    }
+    const sorted = [...transactions].sort((a,b)=>b.time-a.time);
+    list.innerHTML = sorted.map(t=>`
+      <div class="ledger-item">
+        <div class="ledger-top">
+          <span class="ledger-tag ${t.type}">${t.type==='masuk'?'MASUK':'KELUAR'}</span>
+          <span class="ledger-time">${fmtTime(t.time)}</span>
+        </div>
+        <div class="ledger-name">${escapeHtml(t.name)} · ${t.type==='masuk'?'+':'-'}${fmtNum(t.qty)} unit</div>
+        ${t.note ? `<div class="ledger-note">${escapeHtml(t.note)}</div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  function renderAll(){
+    renderStats();
+    renderChips();
+    renderInventory();
+    renderValueBars();
+    renderLedger();
+  }
+
+  /* ---------------- MODAL: ADD ITEM ---------------- */
+  const modalItem = document.getElementById('modalItem');
+  document.getElementById('openAddItem').addEventListener('click', ()=>{
+    ['fName','fSku'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('fCategory').selectedIndex = 0;
+    document.getElementById('fPrice').value = 0;
+    document.getElementById('fQty').value = 0;
+    document.getElementById('fMin').value = 10;
+    openModal(modalItem);
+    document.getElementById('fName').focus();
+  });
+
+  document.getElementById('saveItemBtn').addEventListener('click', ()=>{
+    const name = document.getElementById('fName').value.trim();
+    let sku = document.getElementById('fSku').value.trim();
+    const category = document.getElementById('fCategory').value;
+    const price = Math.max(0, parseInt(document.getElementById('fPrice').value) || 0);
+    const qty = Math.max(0, parseInt(document.getElementById('fQty').value) || 0);
+    const min = Math.max(0, parseInt(document.getElementById('fMin').value) || 0);
+
+    if(!name){ toast('Nama produk wajib diisi', 'danger'); document.getElementById('fName').focus(); return; }
+    if(!sku){ sku = 'SKU-P' + (100 + nextItemId); }
+    if(items.some(i=>i.sku.toLowerCase() === sku.toLowerCase())){
+      toast('SKU sudah digunakan, gunakan SKU lain', 'danger');
+      return;
+    }
+
+    items.push({id: nextItemId++, sku, name, category, price, qty, min});
+    closeModal(modalItem);
+    renderAll();
+    toast('Produk "' + name + '" berhasil ditambahkan');
+  });
+
+  /* ---------------- MODAL: STOCK IN / OUT ---------------- */
+  const modalStock = document.getElementById('modalStock');
+  function openStockModal(id, type){
+    const item = items.find(i=>i.id===id);
+    if(!item) return;
+    stockContextItemId = id;
+    stockContextType = type;
+    document.getElementById('modalStockTitle').textContent = type==='in' ? 'Stok Masuk' : 'Stok Keluar';
+    document.getElementById('stockQtyLabel').textContent = 'Jumlah ' + (type==='in' ? 'Masuk' : 'Keluar') + ' (unit)';
+    document.getElementById('stockContext').innerHTML =
+      `<b>${escapeHtml(item.name)}</b> · ${escapeHtml(item.sku)}<br>Stok saat ini: <b>${fmtNum(item.qty)} unit</b> · ${fmtRp(item.price)} / unit`;
+    document.getElementById('fStockQty').value = 1;
+    document.getElementById('fStockQty').max = type==='out' ? item.qty : '';
+    document.getElementById('fStockNote').value = '';
+    openModal(modalStock);
+    document.getElementById('fStockQty').focus();
+  }
+
+  document.getElementById('confirmStockBtn').addEventListener('click', ()=>{
+    const item = items.find(i=>i.id===stockContextItemId);
+    if(!item) return;
+    const qty = parseInt(document.getElementById('fStockQty').value) || 0;
+    const note = document.getElementById('fStockNote').value.trim();
+
+    if(qty <= 0){ toast('Jumlah harus lebih dari 0', 'danger'); return; }
+    if(stockContextType === 'out' && qty > item.qty){
+      toast('Jumlah keluar melebihi stok yang tersedia', 'danger');
+      return;
+    }
+
+    if(stockContextType === 'in') item.qty += qty; else item.qty -= qty;
+
+    transactions.push({
+      id: nextTxId++,
+      type: stockContextType === 'in' ? 'masuk' : 'keluar',
+      name: item.name, qty, note, time: Date.now()
+    });
+
+    closeModal(modalStock);
+    renderAll();
+    toast((stockContextType==='in' ? 'Stok masuk dicatat: ' : 'Stok keluar dicatat: ') + qty + ' unit', stockContextType==='in' ? '' : 'warn');
+  });
+
+  /* ---------------- MODAL: DELETE ---------------- */
+  const modalDelete = document.getElementById('modalDelete');
+  function openDeleteModal(id){
+    const item = items.find(i=>i.id===id);
+    if(!item) return;
+    deleteContextId = id;
+    document.getElementById('deleteItemName').textContent = item.name;
+    openModal(modalDelete);
+  }
+  document.getElementById('confirmDeleteBtn').addEventListener('click', ()=>{
+    const item = items.find(i=>i.id===deleteContextId);
+    items = items.filter(i=>i.id!==deleteContextId);
+    closeModal(modalDelete);
+    renderAll();
+    if(item) toast('Produk "' + item.name + '" dihapus', 'danger');
+  });
+
+  /* ---------------- MODAL HELPERS ---------------- */
+  function openModal(el){ el.classList.add('show'); }
+  function closeModal(el){ el.classList.remove('show'); }
+  document.querySelectorAll('[data-close]').forEach(btn=>{
+    btn.addEventListener('click', ()=> btn.closest('.modal-backdrop').classList.remove('show'));
+  });
+  document.querySelectorAll('.modal-backdrop').forEach(bd=>{
+    bd.addEventListener('click', (e)=>{ if(e.target === bd) bd.classList.remove('show'); });
+  });
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape'){ document.querySelectorAll('.modal-backdrop.show').forEach(m=>m.classList.remove('show')); }
+  });
+
+  /* ---------------- TABLE ACTION DELEGATION ---------------- */
+  document.getElementById('inventoryBody').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-action]');
+    if(!btn) return;
+    const id = parseInt(btn.dataset.id);
+    const action = btn.dataset.action;
+    if(action === 'in') openStockModal(id, 'in');
+    else if(action === 'out') openStockModal(id, 'out');
+    else if(action === 'delete') openDeleteModal(id);
+  });
+
+  /* ---------------- SEARCH ---------------- */
+  document.getElementById('searchInput').addEventListener('input', (e)=>{
+    searchTerm = e.target.value;
+    renderInventory();
+  });
+
+  /* ---------------- NAV TABS ---------------- */
+  const views = {
+    dashboard:{eyebrow:'RINGKASAN STOK', title:'Dashboard Inventory'},
+    catalog:{eyebrow:'DATA PRODUK', title:'Katalog Produk'},
+    ledger:{eyebrow:'LOG AKTIVITAS', title:'Riwayat Stok Masuk & Keluar'}
+  };
+  document.querySelectorAll('.nav-tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      currentView = tab.dataset.view;
+      const v = views[currentView];
+      document.getElementById('pageEyebrow').textContent = v.eyebrow;
+      document.getElementById('pageTitle').textContent = v.title;
+      document.querySelector('.stat-grid').style.display = currentView === 'ledger' ? 'none' : 'grid';
+      document.querySelector('.chip-row').style.display = currentView === 'ledger' ? 'none' : 'flex';
+    });
+  });
+
+  /* ---------------- INIT ---------------- */
+  renderAll();
+})();
+</script>
+</body>
+</html>

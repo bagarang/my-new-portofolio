@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sales CRM Demo</title>
+<style>
+  :root{
+    --bg:#f4f6fb; --surface:#ffffff; --border:#e6e8ef; --text:#1f2937;
+    --muted:#6b7280; --primary:#4f46e5; --primary-dark:#4338ca;
+    --green:#10b981; --amber:#f59e0b; --red:#ef4444; --blue:#3b82f6;
+    --radius:12px; --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+    --shadow-lg:0 10px 30px rgba(0,0,0,.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+  a{color:inherit;text-decoration:none}
+
+  /* Layout */
+  .app{display:flex;min-height:100vh}
+  .sidebar{width:230px;background:#0f172a;color:#cbd5e1;padding:18px 0;position:fixed;height:100vh;left:0;top:0;transition:transform .25s;z-index:50}
+  .brand{display:flex;align-items:center;gap:10px;padding:6px 20px 22px}
+  .brand .logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--primary),#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+  .brand b{color:#fff;font-size:16px}
+  .nav a{display:flex;align-items:center;gap:12px;padding:11px 20px;color:#94a3b8;font-weight:500;cursor:pointer;border-left:3px solid transparent}
+  .nav a:hover{background:#1e293b;color:#fff}
+  .nav a.active{background:#1e293b;color:#fff;border-left-color:var(--primary)}
+  .nav .ic{width:18px;text-align:center}
+  .sidebar-foot{position:absolute;bottom:14px;left:20px;right:20px;font-size:11px;color:#64748b}
+
+  .main{flex:1;margin-left:230px;padding:22px 28px 60px;min-width:0}
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:14px;flex-wrap:wrap}
+  .topbar h1{font-size:22px;font-weight:700}
+  .topbar .sub{color:var(--muted);font-size:13px;margin-top:2px}
+  .search{position:relative}
+  .search input{padding:9px 14px 9px 34px;border:1px solid var(--border);border-radius:9px;width:280px;background:var(--surface);font-size:13px}
+  .search input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+  .search .s-ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted)}
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 15px;border-radius:9px;border:none;background:var(--primary);color:#fff;font-weight:600;font-size:13px;cursor:pointer;transition:.15s}
+  .btn:hover{background:var(--primary-dark)}
+  .btn.ghost{background:#fff;color:var(--text);border:1px solid var(--border)}
+  .btn.ghost:hover{background:#f9fafb}
+  .btn.sm{padding:6px 11px;font-size:12px}
+  .btn.danger{background:var(--red)}
+
+  /* Cards */
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-bottom:22px}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+  .kpi .label{color:var(--muted);font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+  .kpi .val{font-size:24px;font-weight:700;margin-top:6px}
+  .kpi .trend{font-size:12px;margin-top:6px;display:flex;align-items:center;gap:4px}
+  .kpi .up{color:var(--green)} .kpi .down{color:var(--red)}
+  .kpi .ic{float:right;width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:22px}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
+  .panel-head h3{font-size:15px;font-weight:600}
+  .panel-body{padding:18px 20px}
+
+  /* Dashboard widgets */
+  .dash-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:22px}
+  @media(max-width:980px){.dash-grid{grid-template-columns:1fr}}
+  table{width:100%;border-collapse:collapse}
+  th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--border);font-size:13px}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600}
+  tbody tr:hover{background:#f9fafb}
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600}
+  .badge.lead{background:#eef2ff;color:#4f46e5}
+  .badge.qualified{background:#dbeafe;color:#1d4ed8}
+  .badge.proposal{background:#fef3c7;color:#b45309}
+  .badge.negotiation{background:#ffedd5;color:#c2410c}
+  .badge.won{background:#d1fae5;color:#047857}
+  .badge.lost{background:#fee2e2;color:#b91c1c}
+
+  /* Kanban */
+  .kanban{display:flex;gap:14px;overflow-x:auto;padding:4px 4px 14px}
+  .col{min-width:260px;flex:1;background:#f8fafc;border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;max-height:620px}
+  .col-head{padding:13px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);position:sticky;top:0;background:#f8fafc;border-radius:var(--radius) var(--radius) 0 0}
+  .col-head .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:8px}
+  .col-head .cnt{font-size:11px;color:var(--muted);background:#fff;border:1px solid var(--border);border-radius:999px;padding:2px 8px}
+  .col-body{padding:10px;overflow-y:auto;flex:1;min-height:80px}
+  .col-body.drag-over{background:#eef2ff;outline:2px dashed var(--primary);outline-offset:-4px;border-radius:8px}
+  .deal{background:#fff;border:1px solid var(--border);border-radius:9px;padding:12px;margin-bottom:9px;cursor:grab;box-shadow:var(--shadow);transition:.15s}
+  .deal:hover{box-shadow:var(--shadow-lg);transform:translateY(-1px)}
+  .deal.dragging{opacity:.4}
+  .deal .d-title{font-weight:600;font-size:13px;margin-bottom:4px}
+  .deal .d-co{font-size:12px;color:var(--muted);margin-bottom:8px}
+  .deal .d-foot{display:flex;align-items:center;justify-content:space-between;font-size:12px}
+  .deal .d-val{font-weight:700;color:var(--primary)}
+  .deal .d-owner{display:flex;align-items:center;gap:6px;color:var(--muted)}
+  .avatar{width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+  .deal-actions{display:flex;gap:4px;margin-top:8px}
+  .deal-actions button{font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:#fff;cursor:pointer;color:var(--muted)}
+  .deal-actions button:hover{background:#f3f4f6;color:var(--text)}
+  .deal-actions .del:hover{color:var(--red);border-color:var(--red)}
+
+  /* Contacts */
+  .table-wrap{overflow-x:auto}
+  .ct-actions{display:flex;gap:6px}
+  .ct-actions button{background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;border-radius:5px}
+  .ct-actions button:hover{background:#f3f4f6;color:var(--text)}
+  .ct-actions .del:hover{color:var(--red)}
+
+  /* Activities */
+  .timeline{position:relative;padding-left:24px}
+  .timeline::before{content:'';position:absolute;left:7px;top:4px;bottom:4px;width:2px;background:var(--border)}
+  .tl-item{position:relative;padding:0 0 18px 8px}
+  .tl-item::before{content:'';position:absolute;left:-22px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--primary);border:2px solid #fff;box-shadow:0 0 0 2px var(--primary)}
+  .tl-item.done::before{background:var(--green);box-shadow:0 0 0 2px var(--green)}
+  .tl-meta{font-size:11px;color:var(--muted);margin-bottom:2px}
+  .tl-title{font-weight:600;font-size:13px}
+  .tl-desc{font-size:12px;color:var(--muted);margin-top:2px}
+  .tl-check{float:right;cursor:pointer;font-size:14px;color:var(--muted)}
+
+  /* Modal */
+  .overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+  .overlay.show{display:flex}
+  .modal{background:#fff;border-radius:14px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:pop .2s}
+  @keyframes pop{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
+  .modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .modal-head h3{font-size:16px;font-weight:600}
+  .modal-head .x{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1}
+  .modal-body{padding:20px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:#374151}
+  .field input,.field select,.field textarea{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:#fff}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+  .field textarea{resize:vertical;min-height:70px}
+  .modal-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
+
+  /* Toast */
+  .toast{position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;padding:12px 18px;border-radius:9px;font-size:13px;box-shadow:var(--shadow-lg);opacity:0;transform:translateY(10px);transition:.25s;z-index:200;max-width:320px}
+  .toast.show{opacity:1;transform:translateY(0)}
+
+  .view{display:none} .view.active{display:block}
+  .empty{text-align:center;color:var(--muted);padding:40px 10px;font-size:13px}
+  .menu-toggle{display:none;background:none;border:none;font-size:22px;cursor:pointer;color:var(--text)}
+
+  @media(max-width:860px){
+    .sidebar{transform:translateX(-100%)}
+    .sidebar.open{transform:translateX(0)}
+    .main{margin-left:0}
+    .menu-toggle{display:block}
+    .search input{width:180px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo">S</div>
+      <b>SalesFlow CRM</b>
+    </div>
+    <nav class="nav" id="nav">
+      <a data-view="dashboard" class="active"><span class="ic">📊</span> Dashboard</a>
+      <a data-view="deals"><span class="ic">💼</span> Deals</a>
+      <a data-view="contacts"><span class="ic">👥</span> Contacts</a>
+      <a data-view="activities"><span class="ic">📅</span> Activities</a>
+    </nav>
+    <div class="sidebar-foot">Demo Version 1.0<br>Data tersimpan di browser</div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div>
+          <h1 id="page-title">Dashboard</h1>
+          <div class="sub" id="page-sub">Ringkasan performa penjualan kamu</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <a href="why_portofolio.html" class="btn ghost">← Kembali ke Portofolio</a>
+        <div class="search">
+          <span class="s-ic">🔍</span>
+          <input id="globalSearch" placeholder="Cari deal / kontak..." oninput="onGlobalSearch(this.value)" />
+        </div>
+        <button class="btn ghost" onclick="resetData()">↺ Reset Data</button>
+        <button class="btn" id="addBtn" onclick="openAdd()">+ Tambah Deal</button>
+      </div>
+    </div>
+
+    <!-- Dashboard View -->
+    <section class="view active" id="view-dashboard">
+      <div class="kpi-grid" id="kpiGrid"></div>
+      <div class="dash-grid">
+        <div class="panel">
+          <div class="panel-head"><h3>Deal Terbaru</h3><button class="btn sm ghost" data-goto="deals">Lihat semua →</button></div>
+          <div class="panel-body" style="padding:0 4px">
+            <div class="table-wrap">
+              <table id="recentDealsTable">
+                <thead><tr><th>Deal</th><th>Perusahaan</th><th>Nilai</th><th>Stage</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Distribusi Pipeline</h3></div>
+          <div class="panel-body" id="pipelineChart"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Deals View -->
+    <section class="view" id="view-deals">
+      <div class="panel" style="margin-bottom:14px">
+        <div class="panel-head">
+          <h3>Pipeline Kanban</h3>
+          <span class="sub" style="font-size:12px">Seret kartu antar kolom untuk mengubah stage</span>
+        </div>
+      </div>
+      <div class="kanban" id="kanban"></div>
+    </section>
+
+    <!-- Contacts View -->
+    <section class="view" id="view-contacts">
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Daftar Kontak</h3>
+          <button class="btn sm" onclick="openAddContact()">+ Tambah Kontak</button>
+        </div>
+        <div class="panel-body" style="padding:0 4px">
+          <div class="table-wrap">
+            <table id="contactsTable">
+              <thead><tr><th>Nama</th><th>Perusahaan</th><th>Email</th><th>Telepon</th><th>Status</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Activities View -->
+    <section class="view" id="view-activities">
+      <div class="dash-grid">
+        <div class="panel">
+          <div class="panel-head"><h3>Timeline Aktivitas</h3><button class="btn sm" onclick="openAddActivity()">+ Tambah</button></div>
+          <div class="panel-body"><div class="timeline" id="timeline"></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Ringkasan</h3></div>
+          <div class="panel-body" id="actSummary"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-head"><h3 id="modalTitle">Tambah Deal</h3><button class="x" onclick="closeModal()">×</button></div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot" id="modalFoot"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============== DATA LAYER ============== */
+const STAGES = [
+  {key:'lead',        label:'Lead',         color:'#6366f1'},
+  {key:'qualified',   label:'Qualified',    color:'#3b82f6'},
+  {key:'proposal',    label:'Proposal',     color:'#f59e0b'},
+  {key:'negotiation', label:'Negotiation',  color:'#f97316'},
+  {key:'won',         label:'Won',          color:'#10b981'},
+  {key:'lost',        label:'Lost',         color:'#ef4444'}
+];
+
+const SEED = {
+  contacts:[
+    {id:'c1', name:'Andi Wijaya',  company:'PT Maju Jaya',      email:'andi@majujaya.co.id',  phone:'08123456780', status:'Customer'},
+    {id:'c2', name:'Siti Rahma',   company:'CV Berkah Abadi',   email:'siti@berkahabadi.com', phone:'08123456781', status:'Lead'},
+    {id:'c3', name:'Budi Santoso', company:'PT Teknologi Nusa', email:'budi@teknus.co.id',    phone:'08123456782', status:'Prospect'},
+    {id:'c4', name:'Dewi Lestari', company:'PT Sehat Selalu',   email:'dewi@sehatselalu.id',  phone:'08123456783', status:'Customer'},
+    {id:'c5', name:'Rudi Hartono', company:'PT Logistik Cepat', email:'rudi@logcepat.com',    phone:'08123456784', status:'Prospect'},
+    {id:'c6', name:'Maya Putri',   company:'CV Kreatif Kita',   email:'maya@kreatifkita.id',  phone:'08123456785', status:'Lead'}
+  ],
+  deals:[
+    {id:'d1', title:'Paket Software ERP',       company:'PT Maju Jaya',      value:75000000,  stage:'negotiation', owner:'Andi',  contact:'c1', date:'2026-08-12'},
+    {id:'d2', title:'Layanan Konsultasi IT',     company:'PT Teknologi Nusa', value:45000000,  stage:'proposal',    owner:'Budi',  contact:'c3', date:'2026-08-15'},
+    {id:'d3', title:'Implementasi Cloud',        company:'CV Berkah Abadi',   value:30000000,  stage:'qualified',   owner:'Siti',  contact:'c2', date:'2026-08-20'},
+    {id:'d4', title:'Paket Pelatihan Staff',     company:'PT Sehat Selalu',   value:18000000,  stage:'won',         owner:'Dewi',  contact:'c4', date:'2026-08-02'},
+    {id:'d5', title:'Sistem Inventory',          company:'PT Logistik Cepat', value:62000000,  stage:'lead',        owner:'Rudi',  contact:'c5', date:'2026-08-25'},
+    {id:'d6', title:'Desain Website Company',    company:'CV Kreatif Kita',   value:12000000,  stage:'proposal',    owner:'Maya',  contact:'c6', date:'2026-08-18'},
+    {id:'d7', title:'Maintenance Server Tahunan',company:'PT Maju Jaya',      value:24000000,  stage:'won',         owner:'Andi',  contact:'c1', date:'2026-07-28'},
+    {id:'d8', title:'Aplikasi Mobile Sales',     company:'PT Teknologi Nusa', value:95000000,  stage:'lead',        owner:'Budi',  contact:'c3', date:'2026-08-30'}
+  ],
+  activities:[
+    {id:'a1', title:'Follow up call dengan Andi',  desc:'Diskusi lanjutan terkait paket ERP', date:'2026-08-07', type:'call',   done:false},
+    {id:'a2', title:'Kirim proposal ke PT Teknologi', desc:'Proposal layanan konsultasi IT',  date:'2026-08-06', type:'email',  done:true},
+    {id:'a3', title:'Meeting demo software',        desc:'Demo implementasi cloud ke CV Berkah', date:'2026-08-09', type:'meeting',done:false},
+    {id:'a4', title:'Tanda tangan kontrak',          desc:'Kontrak paket pelatihan PT Sehat Selalu', date:'2026-08-02', type:'task',  done:true},
+    {id:'a5', title:'Kontak awal Rudi Hartono',       desc:'Perkenalan layanan logistik',     date:'2026-08-05', type:'call',   done:true}
+  ]
+};
+
+let state = load();
+
+function load(){
+  try{
+    const s = localStorage.getItem('salescrm_v1');
+    if(s) return JSON.parse(s);
+  }catch(e){}
+  return JSON.parse(JSON.stringify(SEED));
+}
+function save(){
+  localStorage.setItem('salescrm_v1', JSON.stringify(state));
+}
+function resetData(){
+  if(confirm('Reset semua data ke contoh awal? Perubahan kamu akan hilang.')){
+    localStorage.removeItem('salescrm_v1');
+    state = JSON.parse(JSON.stringify(SEED));
+    save();
+    toast('Data berhasil direset');
+    renderAll();
+  }
+}
+function uid(p){return p+Math.random().toString(36).slice(2,9)}
+
+/* ============== UTILS ============== */
+function fmt(v){return 'Rp '+Number(v).toLocaleString('id-ID')}
+function fmtShort(v){
+  if(v>=1e9)return 'Rp '+(v/1e9).toFixed(1)+'M';
+  if(v>=1e6)return 'Rp '+(v/1e6).toFixed(0)+'jt';
+  if(v>=1e3)return 'Rp '+(v/1e3).toFixed(0)+'rb';
+  return 'Rp '+v;
+}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(window._tt);window._tt=setTimeout(()=>t.classList.remove('show'),2200);
+}
+function stageBadge(key){
+  const s=STAGES.find(x=>x.key===key)||STAGES[0];
+  return `<span class="badge ${key}"><span style="width:6px;height:6px;border-radius:50%;background:${s.color}"></span>${s.label}</span>`;
+}
+function initials(n){return n.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase()}
+
+/* ============== NAVIGATION ============== */
+const TITLES={
+  dashboard:['Dashboard','Ringkasan performa penjualan kamu'],
+  deals:['Deals Pipeline','Kelola seluruh deal dalam pipeline kanban'],
+  contacts:['Contacts','Daftar pelanggan & prospek kamu'],
+  activities:['Activities','Tugas dan riwayat aktivitas penjualan']
+};
+document.querySelectorAll('#nav a').forEach(a=>{
+  a.onclick=()=>{
+    document.querySelectorAll('#nav a').forEach(x=>x.classList.remove('active'));
+    a.classList.add('active');
+    const v=a.dataset.view;
+    document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+    document.getElementById('view-'+v).classList.add('active');
+    document.getElementById('page-title').textContent=TITLES[v][0];
+    document.getElementById('page-sub').textContent=TITLES[v][1];
+    document.getElementById('addBtn').textContent = v==='contacts'?'+ Tambah Kontak' : v==='activities'?'+ Tambah Aktivitas' : '+ Tambah Deal';
+    document.getElementById('addBtn').onclick = v==='contacts'?openAddContact : v==='activities'?openAddActivity : openAdd;
+    document.getElementById('sidebar').classList.remove('open');
+  };
+});
+document.querySelectorAll('[data-goto]').forEach(b=>b.onclick=()=>{document.querySelector('#nav a[data-view="'+b.dataset.goto+'"]').click()});
+
+/* ============== DASHBOARD ============== */
+function renderDashboard(){
+  const deals=state.deals;
+  const won=deals.filter(d=>d.stage==='won');
+  const active=deals.filter(d=>!['won','lost'].includes(d.stage));
+  const pipelineVal=active.reduce((s,d)=>s+d.value,0);
+  const wonVal=won.reduce((s,d)=>s+d.value,0);
+  const winRate=deals.length?Math.round(won.length/deals.length*100):0;
+
+  const kpis=[
+    {label:'Total Pipeline',val:fmtShort(pipelineVal),ic:'💼',bg:'#eef2ff',cl:'up',tr:'▲ 12% vs bln lalu'},
+    {label:'Deal Won',val:fmtShort(wonVal),ic:'✅',bg:'#d1fae5',cl:'up',tr:'▲ 8% vs bln lalu'},
+    {label:'Jumlah Deal Aktif',val:active.length,ic:'⚡',bg:'#dbeafe',cl:'up',tr:'▲ 3 deal baru'},
+    {label:'Win Rate',val:winRate+'%',ic:'🎯',bg:'#fef3c7',cl:winRate>=50?'up':'down',tr:(winRate>=50?'▲':'▼')+' '+Math.abs(winRate-50)+'% dari target'}
+  ];
+  document.getElementById('kpiGrid').innerHTML=kpis.map(k=>`
+    <div class="kpi">
+      <div class="ic" style="background:${k.bg}">${k.ic}</div>
+      <div class="label">${k.label}</div>
+      <div class="val">${k.val}</div>
+      <div class="trend ${k.cl}">${k.tr}</div>
+    </div>`).join('');
+
+  // recent deals
+  const recent=[...deals].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+  document.querySelector('#recentDealsTable tbody').innerHTML = recent.length?recent.map(d=>`
+    <tr>
+      <td><b>${d.title}</b></td>
+      <td>${d.company}</td>
+      <td><b style="color:var(--primary)">${fmtShort(d.value)}</b></td>
+      <td>${stageBadge(d.stage)}</td>
+    </tr>`).join(''):'<tr><td colspan="4" class="empty">Belum ada deal</td></tr>';
+
+  // pipeline chart
+  const byStage=STAGES.map(s=>({s, total:deals.filter(d=>d.stage===s.key).reduce((a,b)=>a+b.value,0), count:deals.filter(d=>d.stage===s.key).length}));
+  const max=Math.max(...byStage.map(x=>x.total),1);
+  document.getElementById('pipelineChart').innerHTML = byStage.map(x=>`
+    <div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+        <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${x.s.color};margin-right:6px"></span>${x.s.label}</span>
+        <b>${fmtShort(x.total)}</b>
+      </div>
+      <div style="height:8px;background:#f1f5f9;border-radius:5px;overflow:hidden">
+        <div style="height:100%;width:${(x.total/max*100)||0}%;background:${x.s.color};border-radius:5px;transition:width .5s"></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px">${x.count} deal</div>
+    </div>`).join('');
+}
+
+/* ============== DEALS KANBAN ============== */
+let dragDeal=null;
+function renderKanban(){
+  const kb=document.getElementById('kanban');
+  kb.innerHTML=STAGES.map(s=>{
+    const items=state.deals.filter(d=>d.stage===s.key);
+    const total=items.reduce((a,b)=>a+b.value,0);
+    return `
+    <div class="col">
+      <div class="col-head">
+        <div><span class="dot" style="background:${s.color}"></span><b style="font-size:13px">${s.label}</b></div>
+        <span class="cnt">${items.length}</span>
+      </div>
+      <div class="col-body" data-stage="${s.key}" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'${s.key}')">
+        ${items.map(d=>dealCard(d)).join('') || '<div class="empty" style="padding:20px 4px">Kosong</div>'}
+        ${items.length?`<div style="text-align:center;font-size:11px;color:var(--muted);margin-top:6px">Total: <b>${fmtShort(total)}</b></div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+function dealCard(d){
+  return `
+  <div class="deal" draggable="true" ondragstart="onDragStart(event,'${d.id}')" ondragend="onDragEnd(event)">
+    <div class="d-title">${d.title}</div>
+    <div class="d-co">🏢 ${d.company}</div>
+    <div class="d-foot">
+      <span class="d-val">${fmtShort(d.value)}</span>
+      <span class="d-owner"><span class="avatar">${initials(d.owner)}</span>${d.owner}</span>
+    </div>
+    <div class="deal-actions">
+      <button onclick="editDeal('${d.id}')">✏️ Edit</button>
+      <button class="del" onclick="delDeal('${d.id}')">🗑️</button>
+    </div>
+  </div>`;
+}
+function onDragStart(e,id){dragDeal=id;e.target.classList.add('dragging')}
+function onDragEnd(e){e.target.classList.remove('dragging');document.querySelectorAll('.col-body').forEach(c=>c.classList.remove('drag-over'))}
+function onDragOver(e){e.preventDefault();e.currentTarget.classList.add('drag-over')}
+function onDragLeave(e){e.currentTarget.classList.remove('drag-over')}
+function onDrop(e,stage){
+  e.preventDefault();e.currentTarget.classList.remove('drag-over');
+  if(!dragDeal)return;
+  const d=state.deals.find(x=>x.id===dragDeal);
+  if(d && d.stage!==stage){d.stage=stage;save();toast('Deal dipindahkan ke '+STAGES.find(s=>s.key===stage).label);renderAll()}
+  dragDeal=null;
+}
+function editDeal(id){openAdd(id)}
+function delDeal(id){
+  if(confirm('Hapus deal ini?')){
+    state.deals=state.deals.filter(d=>d.id!==id);save();toast('Deal dihapus');renderAll();
+  }
+}
+
+/* ============== CONTACTS ============== */
+function renderContacts(filter=''){
+  const f=filter.toLowerCase();
+  const list=state.contacts.filter(c=>
+    !f || c.name.toLowerCase().includes(f)||c.company.toLowerCase().includes(f)||c.email.toLowerCase().includes(f)
+  );
+  document.querySelector('#contactsTable tbody').innerHTML = list.length?list.map(c=>`
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:8px"><span class="avatar">${initials(c.name)}</span><b>${c.name}</b></div></td>
+      <td>${c.company}</td>
+      <td>${c.email}</td>
+      <td>${c.phone}</td>
+      <td><span class="badge ${c.status==='Customer'?'won':c.status==='Prospect'?'proposal':'lead'}">${c.status}</span></td>
+      <td><div class="ct-actions">
+        <button onclick="editContact('${c.id}')">✏️</button>
+        <button class="del" onclick="delContact('${c.id}')">🗑️</button>
+      </div></td>
+    </tr>`).join(''):'<tr><td colspan="6" class="empty">Belum ada kontak</td></tr>';
+}
+function delContact(id){
+  if(confirm('Hapus kontak ini?')){
+    state.contacts=state.contacts.filter(c=>c.id!==id);save();toast('Kontak dihapus');renderAll();
+  }
+}
+
+/* ============== ACTIVITIES ============== */
+function renderActivities(){
+  const items=[...state.activities].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const icons={call:'📞',email:'✉️',meeting:'🤝',task:'✔️'};
+  document.getElementById('timeline').innerHTML = items.length?items.map(a=>`
+    <div class="tl-item ${a.done?'done':''}">
+      <span class="tl-check" onclick="toggleAct('${a.id}')" title="Tandai selesai">${a.done?'✅':'⬜'}</span>
+      <div class="tl-meta">${icons[a.type]||'•'} ${a.date}</div>
+      <div class="tl-title">${a.title}</div>
+      <div class="tl-desc">${a.desc||''}</div>
+      <div class="deal-actions" style="margin-top:6px">
+        <button onclick="editActivity('${a.id}')">✏️ Edit</button>
+        <button class="del" onclick="delActivity('${a.id}')">🗑️ Hapus</button>
+      </div>
+    </div>`).join(''):'<div class="empty">Belum ada aktivitas</div>';
+
+  const done=state.activities.filter(a=>a.done).length;
+  const total=state.activities.length;
+  const upcoming=state.activities.filter(a=>!a.done && new Date(a.date)>=new Date('2026-08-07')).length;
+  document.getElementById('actSummary').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="background:#f8fafc;border-radius:9px;padding:14px;text-align:center">
+        <div style="font-size:24px;font-weight:700;color:var(--green)">${done}/${total}</div>
+        <div style="font-size:12px;color:var(--muted)">Aktivitas selesai</div>
+      </div>
+      <div style="background:#f8fafc;border-radius:9px;padding:14px;text-align:center">
+        <div style="font-size:24px;font-weight:700;color:var(--amber)">${upcoming}</div>
+        <div style="font-size:12px;color:var(--muted)">Akan datang</div>
+      </div>
+    </div>
+    <div style="margin-top:14px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Progress</div>
+      <div style="height:8px;background:#f1f5f9;border-radius:5px;overflow:hidden">
+        <div style="height:100%;width:${total?(done/total*100):0}%;background:var(--green);border-radius:5px"></div>
+      </div>
+    </div>`;
+}
+function toggleAct(id){const a=state.activities.find(x=>x.id===id);if(a){a.done=!a.done;save();renderAll()}}
+function delActivity(id){if(confirm('Hapus aktivitas?')){state.activities=state.activities.filter(a=>a.id!==id);save();toast('Aktivitas dihapus');renderAll()}}
+
+/* ============== MODALS ============== */
+function openModal(title,body,foot){
+  document.getElementById('modalTitle').textContent=title;
+  document.getElementById('modalBody').innerHTML=body;
+  document.getElementById('modalFoot').innerHTML=foot;
+  document.getElementById('overlay').classList.add('show');
+}
+function closeModal(){document.getElementById('overlay').classList.remove('show')}
+
+function openAdd(id){
+  const d=id?state.deals.find(x=>x.id===id):null;
+  const contacts=state.contacts;
+  const opts=contacts.map(c=>`<option value="${c.id}" ${d&&d.contact===c.id?'selected':''}>${c.name} — ${c.company}</option>`).join('');
+  const stageOpts=STAGES.map(s=>`<option value="${s.key}" ${d&&d.stage===s.key?'selected':''}>${s.label}</option>`).join('');
+  openModal(
+    d?'Edit Deal':'Tambah Deal',
+    `<div class="field"><label>Judul Deal</label><input id="f_title" value="${d?d.title:''}" placeholder="cth. Paket Software ERP"></div>
+     <div class="field"><label>Kontak</label><select id="f_contact">${opts}</select></div>
+     <div class="field"><label>Perusahaan</label><input id="f_company" value="${d?d.company:''}" placeholder="cth. PT Maju Jaya"></div>
+     <div class="field"><label>Nilai (Rp)</label><input id="f_value" type="number" value="${d?d.value:''}" placeholder="0"></div>
+     <div class="field"><label>Stage</label><select id="f_stage">${stageOpts}</select></div>
+     <div class="field"><label>Owner</label><input id="f_owner" value="${d?d.owner:''}" placeholder="Nama sales"></div>
+     <div class="field"><label>Tanggal</label><input id="f_date" type="date" value="${d?d.date:new Date().toISOString().slice(0,10)}"></div>`,
+    `<button class="btn ghost" onclick="closeModal()">Batal</button><button class="btn" onclick="saveDeal('${id||''}')">Simpan</button>`
+  );
+}
+function saveDeal(id){
+  const title=document.getElementById('f_title').value.trim();
+  if(!title){toast('Judul wajib diisi');return}
+  const cid=document.getElementById('f_contact').value;
+  const contact=state.contacts.find(c=>c.id===cid);
+  const data={
+    title,
+    contact:cid,
+    company:document.getElementById('f_company').value.trim() || (contact?contact.company:''),
+    value:+document.getElementById('f_value').value||0,
+    stage:document.getElementById('f_stage').value,
+    owner:document.getElementById('f_owner').value.trim() || (contact?contact.name:'-'),
+    date:document.getElementById('f_date').value
+  };
+  if(id){Object.assign(state.deals.find(x=>x.id===id),data);toast('Deal diperbarui')}
+  else{state.deals.push({id:uid('d'),...data});toast('Deal ditambahkan')}
+  save();closeModal();renderAll();
+}
+
+function openAddContact(id){
+  const c=id?state.contacts.find(x=>x.id===id):null;
+  openModal(
+    c?'Edit Kontak':'Tambah Kontak',
+    `<div class="field"><label>Nama</label><input id="c_name" value="${c?c.name:''}"></div>
+     <div class="field"><label>Perusahaan</label><input id="c_company" value="${c?c.company:''}"></div>
+     <div class="field"><label>Email</label><input id="c_email" type="email" value="${c?c.email:''}"></div>
+     <div class="field"><label>Telepon</label><input id="c_phone" value="${c?c.phone:''}"></div>
+     <div class="field"><label>Status</label><select id="c_status">
+       <option ${c&&c.status==='Lead'?'selected':''}>Lead</option>
+       <option ${c&&c.status==='Prospect'?'selected':''}>Prospect</option>
+       <option ${c&&c.status==='Customer'?'selected':''}>Customer</option>
+     </select></div>`,
+    `<button class="btn ghost" onclick="closeModal()">Batal</button><button class="btn" onclick="saveContact('${id||''}')">Simpan</button>`
+  );
+}
+function saveContact(id){
+  const name=document.getElementById('c_name').value.trim();
+  if(!name){toast('Nama wajib diisi');return}
+  const data={
+    name,company:document.getElementById('c_company').value.trim(),
+    email:document.getElementById('c_email').value.trim(),
+    phone:document.getElementById('c_phone').value.trim(),
+    status:document.getElementById('c_status').value
+  };
+  if(id){Object.assign(state.contacts.find(x=>x.id===id),data);toast('Kontak diperbarui')}
+  else{state.contacts.push({id:uid('c'),...data});toast('Kontak ditambahkan')}
+  save();closeModal();renderAll();
+}
+function editContact(id){openAddContact(id)}
+
+function openAddActivity(id){
+  const a=id?state.activities.find(x=>x.id===id):null;
+  openModal(
+    a?'Edit Aktivitas':'Tambah Aktivitas',
+    `<div class="field"><label>Judul</label><input id="a_title" value="${a?a.title:''}"></div>
+     <div class="field"><label>Deskripsi</label><textarea id="a_desc">${a?a.desc:''}</textarea></div>
+     <div class="field"><label>Tipe</label><select id="a_type">
+       <option value="call" ${a&&a.type==='call'?'selected':''}>Call</option>
+       <option value="email" ${a&&a.type==='email'?'selected':''}>Email</option>
+       <option value="meeting" ${a&&a.type==='meeting'?'selected':''}>Meeting</option>
+       <option value="task" ${a&&a.type==='task'?'selected':''}>Task</option>
+     </select></div>
+     <div class="field"><label>Tanggal</label><input id="a_date" type="date" value="${a?a.date:new Date().toISOString().slice(0,10)}"></div>
+     <div class="field"><label><input type="checkbox" id="a_done" ${a&&a.done?'checked':''}> Sudah selesai</label></div>`,
+    `<button class="btn ghost" onclick="closeModal()">Batal</button><button class="btn" onclick="saveActivity('${id||''}')">Simpan</button>`
+  );
+}
+function saveActivity(id){
+  const title=document.getElementById('a_title').value.trim();
+  if(!title){toast('Judul wajib diisi');return}
+  const data={
+    title,desc:document.getElementById('a_desc').value.trim(),
+    type:document.getElementById('a_type').value,
+    date:document.getElementById('a_date').value,
+    done:document.getElementById('a_done').checked
+  };
+  if(id){Object.assign(state.activities.find(x=>x.id===id),data);toast('Aktivitas diperbarui')}
+  else{state.activities.push({id:uid('a'),...data});toast('Aktivitas ditambahkan')}
+  save();closeModal();renderAll();
+}
+function editActivity(id){openAddActivity(id)}
+
+/* ============== SEARCH ============== */
+function onGlobalSearch(v){
+  const active=document.querySelector('.view.active').id;
+  if(active==='view-contacts')renderContacts(v);
+  if(active==='view-deals'){
+    // filter kanban
+    const f=v.toLowerCase();
+    document.querySelectorAll('.deal').forEach(card=>{
+      card.style.display = card.textContent.toLowerCase().includes(f)?'':'none';
+    });
+  }
+}
+
+/* ============== RENDER ALL ============== */
+function renderAll(){
+  renderDashboard();
+  renderKanban();
+  renderContacts();
+  renderActivities();
+}
+renderAll();
+</script>
+</body>
+</html>

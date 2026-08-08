@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pgVault — PostgreSQL Restoration Console (Demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0a0e17;
+    --panel: #10182a;
+    --panel-2: #141f36;
+    --line: #223050;
+    --pg-blue: #4a90c7;
+    --pg-blue-bright: #6fb3e0;
+    --amber: #e8a655;
+    --green: #5cc98a;
+    --red: #e0667a;
+    --text: #dce6f5;
+    --muted: #7488a8;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Inter', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(74,144,199,0.14), transparent),
+      radial-gradient(ellipse 700px 500px at 100% 10%, rgba(232,166,85,0.06), transparent),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+  ::selection{background:rgba(74,144,199,0.35);}
+
+  /* ---------- Layout shell ---------- */
+  .shell{
+    display:grid;
+    grid-template-columns: 240px 1fr;
+    min-height:100vh;
+  }
+  @media (max-width: 860px){
+    .shell{grid-template-columns: 1fr;}
+    .sidebar{position:sticky; top:0; z-index:20; display:flex; flex-direction:row; overflow-x:auto; height:auto; padding:10px 12px;}
+    .sidebar .brand{display:none;}
+    .sidebar nav{display:flex; flex-direction:row; gap:6px; width:100%;}
+    .sidebar .foot{display:none;}
+    .nav-item{white-space:nowrap;}
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    background:linear-gradient(180deg, var(--panel), #0c1220);
+    border-right:1px solid var(--line);
+    padding:22px 16px;
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+    position:sticky;
+    top:0;
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    padding:4px 6px 22px 6px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:18px;
+  }
+  .brand .mark{
+    width:34px;height:34px;border-radius:9px;
+    background:linear-gradient(135deg, var(--pg-blue), #2a5a86);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono); font-weight:700; font-size:16px; color:#eaf3fb;
+    box-shadow:0 0 0 1px rgba(111,179,224,0.25), 0 6px 18px -6px rgba(74,144,199,0.6);
+    flex-shrink:0;
+  }
+  .brand .name{font-weight:800; font-size:15.5px; letter-spacing:-0.01em;}
+  .brand .sub{font-size:11px; color:var(--muted); font-family:var(--mono);}
+
+  nav{display:flex; flex-direction:column; gap:3px; flex:1;}
+  .nav-item{
+    display:flex; align-items:center; gap:10px;
+    padding:9px 12px; border-radius:8px;
+    font-size:13.5px; font-weight:500; color:var(--muted);
+    cursor:pointer; border:1px solid transparent;
+    transition:.15s ease;
+    user-select:none;
+  }
+  .nav-item svg{width:16px;height:16px; flex-shrink:0; opacity:.8;}
+  .nav-item:hover{background:rgba(74,144,199,0.08); color:var(--text);}
+  .nav-item.active{
+    background:rgba(74,144,199,0.13);
+    color:#eaf3fb;
+    border-color:rgba(74,144,199,0.3);
+  }
+  .nav-item.active svg{opacity:1;}
+
+  .foot{
+    border-top:1px solid var(--line);
+    padding-top:14px; margin-top:10px;
+    font-size:11px; color:var(--muted); font-family:var(--mono);
+  }
+  .conn-dot{width:7px;height:7px;border-radius:50%; background:var(--green); display:inline-block; margin-right:6px; box-shadow:0 0 8px var(--green);}
+
+  /* ---------- Main ---------- */
+  main{padding:28px 34px 60px; max-width:1180px;}
+  @media (max-width:600px){ main{padding:20px 16px 50px;} }
+
+  .topbar{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    gap:20px; margin-bottom:26px; flex-wrap:wrap;
+  }
+  .topbar h1{font-size:22px; margin:0 0 4px; letter-spacing:-0.01em;}
+  .topbar .desc{color:var(--muted); font-size:13.5px; max-width:520px; line-height:1.5;}
+  .dsn{
+    font-family:var(--mono); font-size:11.5px; color:var(--pg-blue-bright);
+    background:rgba(74,144,199,0.08); border:1px solid rgba(74,144,199,0.25);
+    padding:8px 12px; border-radius:8px; white-space:nowrap;
+  }
+
+  .grid{display:grid; gap:16px;}
+  .cols-3{grid-template-columns:repeat(3,1fr);}
+  .cols-2{grid-template-columns:2fr 1fr;}
+  @media (max-width:760px){ .cols-3,.cols-2{grid-template-columns:1fr;} }
+
+  .card{
+    background:linear-gradient(180deg, var(--panel-2), var(--panel));
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:18px 20px;
+  }
+  .stat-label{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; font-weight:600;}
+  .stat-value{font-family:var(--mono); font-size:26px; font-weight:600; margin-top:6px; color:#eef4fb;}
+  .stat-sub{font-size:12px; color:var(--muted); margin-top:4px;}
+
+  h2.section-title{font-size:14px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin:30px 0 12px; font-weight:700;}
+  h2.section-title:first-of-type{margin-top:0;}
+
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  thead th{
+    text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.05em;
+    color:var(--muted); padding:9px 12px; border-bottom:1px solid var(--line); font-weight:600;
+  }
+  tbody td{padding:10px 12px; border-bottom:1px solid rgba(34,48,80,0.5); font-family:var(--mono); font-size:12.5px;}
+  tbody tr:hover{background:rgba(74,144,199,0.05);}
+  tbody tr:last-child td{border-bottom:none;}
+  .table-wrap{overflow-x:auto;}
+  .pill{
+    display:inline-block; padding:2px 9px; border-radius:100px; font-size:11px; font-weight:600; font-family:var(--sans);
+  }
+  .pill.paid{background:rgba(92,201,138,0.15); color:var(--green);}
+  .pill.pending{background:rgba(232,166,85,0.15); color:var(--amber);}
+  .pill.cancelled{background:rgba(224,102,122,0.15); color:var(--red);}
+
+  .btn{
+    font-family:var(--sans); font-weight:600; font-size:13px;
+    padding:9px 15px; border-radius:8px; border:1px solid var(--line);
+    background:var(--panel-2); color:var(--text); cursor:pointer;
+    transition:.15s ease; display:inline-flex; align-items:center; gap:7px;
+  }
+  .btn:hover{border-color:rgba(74,144,199,0.4); background:rgba(74,144,199,0.08);}
+  .btn:focus-visible{outline:2px solid var(--pg-blue-bright); outline-offset:2px;}
+  .btn.primary{background:linear-gradient(180deg, var(--pg-blue), #33648f); border-color:transparent; color:#f3f8fd;}
+  .btn.primary:hover{background:linear-gradient(180deg, #559fd6, #2c5a82);}
+  .btn.danger{color:var(--red); border-color:rgba(224,102,122,0.3);}
+  .btn.danger:hover{background:rgba(224,102,122,0.1);}
+  .btn.sm{padding:6px 11px; font-size:12px;}
+  .btn:disabled{opacity:.45; cursor:not-allowed;}
+  .btn-row{display:flex; gap:10px; flex-wrap:wrap;}
+
+  .toolbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:10px; flex-wrap:wrap;}
+  .toolbar .row-count{font-size:12px; color:var(--muted); font-family:var(--mono);}
+
+  /* Backups list */
+  .backup-item{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:13px 16px; border:1px solid var(--line); border-radius:10px;
+    margin-bottom:10px; background:rgba(20,31,54,0.5); gap:12px; flex-wrap:wrap;
+  }
+  .backup-item .meta{display:flex; align-items:center; gap:12px;}
+  .backup-item .icon{
+    width:36px;height:36px;border-radius:8px; flex-shrink:0;
+    background:rgba(74,144,199,0.12); border:1px solid rgba(74,144,199,0.25);
+    display:flex; align-items:center; justify-content:center; color:var(--pg-blue-bright);
+  }
+  .backup-item .name{font-weight:600; font-size:13.5px;}
+  .backup-item .info{font-size:11.5px; color:var(--muted); font-family:var(--mono); margin-top:2px;}
+  .badge-current{
+    font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em;
+    color:var(--green); border:1px solid rgba(92,201,138,0.4); background:rgba(92,201,138,0.1);
+    padding:2px 7px; border-radius:5px; margin-left:8px;
+  }
+  .empty{
+    text-align:center; padding:38px 20px; color:var(--muted); font-size:13px;
+    border:1px dashed var(--line); border-radius:10px;
+  }
+
+  /* Terminal / restore log */
+  .terminal{
+    background:#060a12; border:1px solid var(--line); border-radius:10px;
+    font-family:var(--mono); font-size:12.5px; line-height:1.7;
+    padding:16px 18px; height:280px; overflow-y:auto;
+  }
+  .terminal .l{white-space:pre-wrap; word-break:break-word;}
+  .terminal .l .ts{color:var(--muted); margin-right:8px;}
+  .terminal .l.ok{color:var(--green);}
+  .terminal .l.info{color:#9fb4d4;}
+  .terminal .l.warn{color:var(--amber);}
+  .terminal .cursor{display:inline-block; width:7px; height:13px; background:var(--pg-blue-bright); animation:blink 1s step-start infinite; vertical-align:middle;}
+  @keyframes blink{50%{opacity:0;}}
+
+  .progress-wrap{margin:14px 0 4px;}
+  .progress-track{height:8px; border-radius:100px; background:var(--panel); border:1px solid var(--line); overflow:hidden;}
+  .progress-fill{height:100%; width:0%; background:linear-gradient(90deg, var(--pg-blue), var(--pg-blue-bright)); transition:width .35s ease; border-radius:100px;}
+  .progress-label{display:flex; justify-content:space-between; font-size:11.5px; color:var(--muted); font-family:var(--mono); margin-top:6px;}
+
+  select, input[type=text]{
+    background:var(--panel); border:1px solid var(--line); color:var(--text);
+    padding:9px 12px; border-radius:8px; font-family:var(--sans); font-size:13px; width:100%;
+  }
+  select:focus, input:focus{outline:2px solid var(--pg-blue-bright); outline-offset:1px;}
+  label{font-size:12px; color:var(--muted); font-weight:600; display:block; margin-bottom:6px;}
+
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(4,7,13,0.72); backdrop-filter:blur(2px);
+    display:flex; align-items:center; justify-content:center; z-index:100; padding:20px;
+  }
+  .modal{
+    background:linear-gradient(180deg, var(--panel-2), var(--panel));
+    border:1px solid var(--line); border-radius:14px; padding:24px; width:100%; max-width:440px;
+    box-shadow:0 30px 80px -20px rgba(0,0,0,0.7);
+  }
+  .modal h3{margin:0 0 6px; font-size:16px;}
+  .modal p{color:var(--muted); font-size:13px; line-height:1.5; margin:0 0 18px;}
+  .modal .btn-row{justify-content:flex-end;}
+
+  .toast-stack{position:fixed; bottom:22px; right:22px; z-index:200; display:flex; flex-direction:column; gap:10px; max-width:340px;}
+  .toast{
+    background:var(--panel-2); border:1px solid rgba(92,201,138,0.35); border-left:3px solid var(--green);
+    padding:12px 15px; border-radius:9px; font-size:13px; box-shadow:0 12px 30px -10px rgba(0,0,0,0.5);
+    animation:slidein .25s ease;
+  }
+  .toast.err{border-color:rgba(224,102,122,0.35); border-left-color:var(--red);}
+  @keyframes slidein{from{transform:translateX(24px); opacity:0;} to{transform:translateX(0); opacity:1;}}
+
+  .query-console textarea{
+    width:100%; min-height:100px; background:#060a12; color:var(--text);
+    border:1px solid var(--line); border-radius:10px; padding:14px; font-family:var(--mono);
+    font-size:13px; resize:vertical; line-height:1.6;
+  }
+  .query-console textarea:focus{outline:2px solid var(--pg-blue-bright);}
+  .query-result{margin-top:14px;}
+
+  .view{display:none;}
+  .view.active{display:block; animation:fade .2s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);}}
+
+  .flag-note{
+    font-size:11.5px; color:var(--muted); background:rgba(232,166,85,0.07);
+    border:1px solid rgba(232,166,85,0.2); padding:9px 12px; border-radius:8px; margin-top:16px;
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="mark">pg</div>
+      <div>
+        <div class="name">pgVault</div>
+        <div class="sub">restoration console</div>
+      </div>
+    </div>
+    <nav id="nav">
+      <div class="nav-item active" data-view="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" data-view="tables">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg>
+        Tables
+      </div>
+      <div class="nav-item" data-view="backups">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8"/><path d="M23 3H1v5h22z"/><path d="M10 12h4"/></svg>
+        Backups
+      </div>
+      <div class="nav-item" data-view="restore">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        Restoration
+      </div>
+      <div class="nav-item" data-view="query">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+        Query Console
+      </div>
+    </nav>
+    <div class="foot">
+      <div><span class="conn-dot"></span>demo_db terhubung</div>
+      <div style="margin-top:4px;">PostgreSQL 16.2 (simulasi)</div>
+    </div>
+  </aside>
+
+  <main>
+
+    <!-- DASHBOARD -->
+    <section class="view active" id="view-dashboard">
+      <div class="topbar">
+        <div>
+          <h1>Ringkasan Database</h1>
+          <div class="desc">Status koneksi dan aktivitas dari instance PostgreSQL simulasi ini. Semua data berjalan di browser Anda — cocok untuk demo tanpa server sungguhan.</div>
+        </div>
+        <div class="dsn">postgresql://demo_user@localhost:5432/demo_db</div>
+      </div>
+
+      <div class="grid cols-3" id="statCards"></div>
+
+      <h2 class="section-title">Aktivitas Terbaru</h2>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Waktu</th><th>Aksi</th><th>Detail</th></tr></thead>
+            <tbody id="activityBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="flag-note">Ini adalah demo front-end. Query dan proses restorasi disimulasikan secara visual — tidak ada koneksi ke server PostgreSQL sungguhan.</div>
+    </section>
+
+    <!-- TABLES -->
+    <section class="view" id="view-tables">
+      <div class="topbar">
+        <div>
+          <h1>Tables</h1>
+          <div class="desc">Data langsung dari skema <code>public</code>. Ubah baris di sini lalu buat backup untuk melihat efek restorasi.</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <select id="tableSelect" style="max-width:220px;">
+          <option value="users">public.users</option>
+          <option value="products">public.products</option>
+          <option value="orders">public.orders</option>
+        </select>
+        <div class="btn-row">
+          <button class="btn sm" id="btnAddRow">+ Tambah baris</button>
+          <button class="btn sm danger" id="btnDeleteRow">Hapus baris terakhir</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="toolbar" style="margin-bottom:8px;">
+          <span class="row-count" id="rowCountLabel"></span>
+        </div>
+        <div class="table-wrap">
+          <table id="dataTable">
+            <thead id="dataTableHead"></thead>
+            <tbody id="dataTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- BACKUPS -->
+    <section class="view" id="view-backups">
+      <div class="topbar">
+        <div>
+          <h1>Backups</h1>
+          <div class="desc">Snapshot penuh dari database saat ini, mirip hasil <code>pg_dump</code>. Gunakan snapshot ini nanti di tab Restoration.</div>
+        </div>
+        <button class="btn primary" id="btnCreateBackup">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+          Buat Backup Baru
+        </button>
+      </div>
+      <div id="backupList"></div>
+    </section>
+
+    <!-- RESTORE -->
+    <section class="view" id="view-restore">
+      <div class="topbar">
+        <div>
+          <h1>Database Restoration</h1>
+          <div class="desc">Pilih snapshot backup, lalu jalankan proses restorasi. Log di bawah menampilkan output mirip <code>pg_restore</code> asli secara real-time.</div>
+        </div>
+      </div>
+
+      <div class="grid cols-2">
+        <div class="card">
+          <label for="restoreSelect">Pilih backup untuk direstorasi</label>
+          <select id="restoreSelect"></select>
+
+          <div style="margin-top:16px;">
+            <label style="margin-bottom:8px;">Opsi restorasi</label>
+            <div style="display:flex; flex-direction:column; gap:8px; font-size:13px; color:var(--text);">
+              <label style="display:flex; align-items:center; gap:8px; font-weight:400; color:var(--text); margin:0;">
+                <input type="checkbox" id="optClean" checked style="width:auto;"> Drop objek sebelum restore (--clean)
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; font-weight:400; color:var(--text); margin:0;">
+                <input type="checkbox" id="optSingle" checked style="width:auto;"> Jalankan dalam satu transaksi (--single-transaction)
+              </label>
+            </div>
+          </div>
+
+          <div class="btn-row" style="margin-top:20px;">
+            <button class="btn primary" id="btnStartRestore">Mulai Restorasi</button>
+            <button class="btn" id="btnClearLog">Bersihkan log</button>
+          </div>
+
+          <div class="progress-wrap">
+            <div class="progress-track"><div class="progress-fill" id="restoreProgress"></div></div>
+            <div class="progress-label"><span id="progressStatus">Menunggu perintah</span><span id="progressPct">0%</span></div>
+          </div>
+        </div>
+
+        <div class="card" style="display:flex; flex-direction:column;">
+          <label style="margin-bottom:8px;">Konsol pg_restore</label>
+          <div class="terminal" id="terminal"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUERY CONSOLE -->
+    <section class="view" id="view-query">
+      <div class="topbar">
+        <div>
+          <h1>Query Console</h1>
+          <div class="desc">Jalankan perintah SQL sederhana terhadap data simulasi. Coba: <code>SELECT * FROM users;</code></div>
+        </div>
+      </div>
+      <div class="card query-console">
+        <textarea id="sqlInput" spellcheck="false">SELECT * FROM users;</textarea>
+        <div class="btn-row" style="margin-top:12px;">
+          <button class="btn primary" id="btnRunQuery">▶ Jalankan Query</button>
+          <span class="row-count" id="queryTiming"></span>
+        </div>
+        <div class="query-result" id="queryResult"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============ SEED DATA ============ */
+  function seedData(){
+    return {
+      users:[
+        {id:1, name:"Dewi Anggraini", email:"dewi.a@example.co.id", created_at:"2026-01-04"},
+        {id:2, name:"Bagas Prasetyo", email:"bagas.p@example.co.id", created_at:"2026-01-11"},
+        {id:3, name:"Siti Rahayu", email:"siti.r@example.co.id", created_at:"2026-02-02"},
+        {id:4, name:"Fajar Nugroho", email:"fajar.n@example.co.id", created_at:"2026-03-19"},
+      ],
+      products:[
+        {id:1, name:"Kopi Robusta 250g", price:45000, stock:120},
+        {id:2, name:"Teh Hijau Premium", price:32000, stock:80},
+        {id:3, name:"Gula Aren Cair", price:28000, stock:54},
+      ],
+      orders:[
+        {id:1, user_id:1, product_id:1, quantity:2, total:90000, status:"paid"},
+        {id:2, user_id:2, product_id:2, quantity:1, total:32000, status:"pending"},
+        {id:3, user_id:3, product_id:3, quantity:3, total:84000, status:"paid"},
+        {id:4, user_id:1, product_id:2, quantity:1, total:32000, status:"cancelled"},
+      ]
+    };
+  }
+
+  const TABLE_COLUMNS = {
+    users:["id","name","email","created_at"],
+    products:["id","name","price","stock"],
+    orders:["id","user_id","product_id","quantity","total","status"],
+  };
+
+  const LS_KEY = "pgvault_demo_state_v1";
+  const LS_BACKUPS = "pgvault_demo_backups_v1";
+  const LS_ACTIVITY = "pgvault_demo_activity_v1";
+
+  let state = load(LS_KEY, seedData());
+  let backups = load(LS_BACKUPS, []);
+  let activity = load(LS_ACTIVITY, [
+    {ts: nowStr(), action:"CONNECT", detail:"Koneksi ke demo_db berhasil dibuat"},
+  ]);
+
+  function load(key, fallback){
+    try{
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    }catch(e){ return fallback; }
+  }
+  function persist(){
+    try{
+      localStorage.setItem(LS_KEY, JSON.stringify(state));
+      localStorage.setItem(LS_BACKUPS, JSON.stringify(backups));
+      localStorage.setItem(LS_ACTIVITY, JSON.stringify(activity));
+    }catch(e){ /* storage full or unavailable: ignore in demo */ }
+  }
+
+  function nowStr(){
+    const d = new Date();
+    return d.toLocaleString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit', day:'2-digit', month:'short'});
+  }
+  function fmtRupiah(n){
+    return "Rp " + Number(n).toLocaleString('id-ID');
+  }
+  function logActivity(action, detail){
+    activity.unshift({ts: nowStr(), action, detail});
+    activity = activity.slice(0, 12);
+    persist();
+    renderActivity();
+  }
+  function toast(msg, isErr){
+    const stack = document.getElementById('toastStack');
+    const el = document.createElement('div');
+    el.className = 'toast' + (isErr ? ' err' : '');
+    el.textContent = msg;
+    stack.appendChild(el);
+    setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(), 300); }, 3400);
+  }
+
+  /* ============ NAV ============ */
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(item=>{
+    item.addEventListener('click', ()=>{
+      navItems.forEach(n=>n.classList.remove('active'));
+      item.classList.add('active');
+      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+      document.getElementById('view-' + item.dataset.view).classList.add('active');
+      if(item.dataset.view === 'dashboard') renderDashboard();
+      if(item.dataset.view === 'tables') renderTable();
+      if(item.dataset.view === 'backups') renderBackups();
+      if(item.dataset.view === 'restore') renderRestoreSelect();
+    });
+  });
+
+  /* ============ DASHBOARD ============ */
+  function renderDashboard(){
+    const statCards = document.getElementById('statCards');
+    const totalRows = state.users.length + state.products.length + state.orders.length;
+    const dbSize = (totalRows * 4.2 + backups.length * 11.5).toFixed(1);
+    statCards.innerHTML = `
+      <div class="card">
+        <div class="stat-label">Total Baris (3 tabel)</div>
+        <div class="stat-value">${totalRows}</div>
+        <div class="stat-sub">users · products · orders</div>
+      </div>
+      <div class="card">
+        <div class="stat-label">Ukuran Database (simulasi)</div>
+        <div class="stat-value">${dbSize} <span style="font-size:14px; color:var(--muted);">KB</span></div>
+        <div class="stat-sub">${backups.length} backup tersimpan</div>
+      </div>
+      <div class="card">
+        <div class="stat-label">Status Koneksi</div>
+        <div class="stat-value" style="font-size:18px; color:var(--green);">● Terhubung</div>
+        <div class="stat-sub">localhost:5432 / demo_db</div>
+      </div>
+    `;
+    renderActivity();
+  }
+  function renderActivity(){
+    const body = document.getElementById('activityBody');
+    if(!body) return;
+    body.innerHTML = activity.map(a => `
+      <tr><td>${a.ts}</td><td>${a.action}</td><td style="font-family:var(--sans); color:var(--muted);">${a.detail}</td></tr>
+    `).join('');
+  }
+
+  /* ============ TABLES VIEW ============ */
+  const tableSelect = document.getElementById('tableSelect');
+  tableSelect.addEventListener('change', renderTable);
+  document.getElementById('btnAddRow').addEventListener('click', ()=>{
+    const t = tableSelect.value;
+    const rows = state[t];
+    const nextId = rows.length ? Math.max(...rows.map(r=>r.id)) + 1 : 1;
+    let newRow;
+    if(t==='users') newRow = {id:nextId, name:"Pengguna Baru "+nextId, email:`user${nextId}@example.co.id`, created_at:new Date().toISOString().slice(0,10)};
+    if(t==='products') newRow = {id:nextId, name:"Produk Baru "+nextId, price:20000, stock:10};
+    if(t==='orders') newRow = {id:nextId, user_id:1, product_id:1, quantity:1, total:10000, status:"pending"};
+    rows.push(newRow);
+    persist();
+    renderTable();
+    logActivity('INSERT', `1 baris ditambahkan ke public.${t}`);
+    toast(`Baris baru ditambahkan ke ${t}`);
+  });
+  document.getElementById('btnDeleteRow').addEventListener('click', ()=>{
+    const t = tableSelect.value;
+    const rows = state[t];
+    if(rows.length === 0){ toast('Tabel sudah kosong', true); return; }
+    rows.pop();
+    persist();
+    renderTable();
+    logActivity('DELETE', `1 baris dihapus dari public.${t}`);
+    toast(`Baris terakhir dihapus dari ${t}`);
+  });
+
+  function renderTable(){
+    const t = tableSelect.value;
+    const cols = TABLE_COLUMNS[t];
+    const rows = state[t];
+    document.getElementById('dataTableHead').innerHTML = '<tr>' + cols.map(c=>`<th>${c}</th>`).join('') + '</tr>';
+    document.getElementById('rowCountLabel').textContent = `${rows.length} baris · public.${t}`;
+    document.getElementById('dataTableBody').innerHTML = rows.map(r => {
+      return '<tr>' + cols.map(c=>{
+        let v = r[c];
+        if(c==='price' || c==='total') v = fmtRupiah(v);
+        if(c==='status') v = `<span class="pill ${v}">${v}</span>`;
+        return `<td>${v}</td>`;
+      }).join('') + '</tr>';
+    }).join('') || '<tr><td colspan="'+cols.length+'" style="color:var(--muted); font-family:var(--sans); text-align:center; padding:24px;">Tabel kosong</td></tr>';
+  }
+
+  /* ============ BACKUPS VIEW ============ */
+  function deepClone(obj){ return JSON.parse(JSON.stringify(obj)); }
+
+  document.getElementById('btnCreateBackup').addEventListener('click', ()=>{
+    const totalRows = state.users.length + state.products.length + state.orders.length;
+    const backup = {
+      id: 'bak_' + Date.now(),
+      label: 'snapshot_' + new Date().toISOString().replace(/[:.]/g,'-'),
+      createdAt: nowStr(),
+      sizeKb: (totalRows * 4.2 + Math.random()*3).toFixed(1),
+      rowCounts: {users: state.users.length, products: state.products.length, orders: state.orders.length},
+      data: deepClone(state),
+    };
+    backups.unshift(backup);
+    persist();
+    renderBackups();
+    logActivity('BACKUP', `Snapshot "${backup.label}" dibuat (${backup.sizeKb} KB)`);
+    toast('Backup berhasil dibuat: ' + backup.label);
+  });
+
+  function renderBackups(){
+    const list = document.getElementById('backupList');
+    if(backups.length === 0){
+      list.innerHTML = '<div class="empty">Belum ada backup. Klik "Buat Backup Baru" untuk membuat snapshot pertama Anda.</div>';
+      return;
+    }
+    list.innerHTML = backups.map((b, idx) => `
+      <div class="backup-item">
+        <div class="meta">
+          <div class="icon">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8"/><path d="M23 3H1v5h22z"/><path d="M10 12h4"/></svg>
+          </div>
+          <div>
+            <div class="name">${b.label}${idx===0 ? '<span class="badge-current">terbaru</span>' : ''}</div>
+            <div class="info">${b.createdAt} · ${b.sizeKb} KB · ${b.rowCounts.users + b.rowCounts.products + b.rowCounts.orders} baris</div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn sm" data-restore="${b.id}">Restorasi</button>
+          <button class="btn sm danger" data-delete="${b.id}">Hapus</button>
+        </div>
+      </div>
+    `).join('');
+
+    list.querySelectorAll('[data-restore]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const id = btn.getAttribute('data-restore');
+        // Jump to restore tab with this backup preselected
+        document.querySelector('.nav-item[data-view="restore"]').click();
+        document.getElementById('restoreSelect').value = id;
+      });
+    });
+    list.querySelectorAll('[data-delete]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const id = btn.getAttribute('data-delete');
+        backups = backups.filter(b=>b.id!==id);
+        persist();
+        renderBackups();
+        logActivity('BACKUP', 'Snapshot dihapus');
+        toast('Backup dihapus');
+      });
+    });
+  }
+
+  /* ============ RESTORE VIEW ============ */
+  const restoreSelect = document.getElementById('restoreSelect');
+  function renderRestoreSelect(){
+    if(backups.length === 0){
+      restoreSelect.innerHTML = '<option value="">Tidak ada backup tersedia</option>';
+      document.getElementById('btnStartRestore').disabled = true;
+      return;
+    }
+    document.getElementById('btnStartRestore').disabled = false;
+    restoreSelect.innerHTML = backups.map(b => `<option value="${b.id}">${b.label} — ${b.createdAt}</option>`).join('');
+  }
+
+  const terminalEl = document.getElementById('terminal');
+  const progressFill = document.getElementById('restoreProgress');
+  const progressStatus = document.getElementById('progressStatus');
+  const progressPct = document.getElementById('progressPct');
+
+  function termLine(text, cls){
+    const div = document.createElement('div');
+    div.className = 'l ' + (cls||'');
+    const ts = document.createElement('span');
+    ts.className = 'ts';
+    ts.textContent = new Date().toLocaleTimeString('id-ID', {hour12:false});
+    div.appendChild(ts);
+    div.appendChild(document.createTextNode(text));
+    terminalEl.appendChild(div);
+    terminalEl.scrollTop = terminalEl.scrollHeight;
+  }
+
+  document.getElementById('btnClearLog').addEventListener('click', ()=>{
+    terminalEl.innerHTML = '';
+    progressFill.style.width = '0%';
+    progressPct.textContent = '0%';
+    progressStatus.textContent = 'Menunggu perintah';
+  });
+
+  let restoring = false;
+  document.getElementById('btnStartRestore').addEventListener('click', ()=>{
+    if(restoring) return;
+    const id = restoreSelect.value;
+    const backup = backups.find(b=>b.id===id);
+    if(!backup){ toast('Pilih backup terlebih dahulu', true); return; }
+    runRestore(backup);
+  });
+
+  function runRestore(backup){
+    restoring = true;
+    document.getElementById('btnStartRestore').disabled = true;
+    terminalEl.innerHTML = '';
+    progressFill.style.width = '0%';
+
+    const optClean = document.getElementById('optClean').checked;
+    const optSingle = document.getElementById('optSingle').checked;
+
+    const steps = [];
+    steps.push({t:`pg_restore: connecting to database "demo_db" as user "demo_user"`, c:'info'});
+    steps.push({t:`pg_restore: reading archive "${backup.label}.dump" (custom format)`, c:'info'});
+    if(optClean){
+      steps.push({t:`pg_restore: dropping TABLE public.orders`, c:'warn'});
+      steps.push({t:`pg_restore: dropping TABLE public.products`, c:'warn'});
+      steps.push({t:`pg_restore: dropping TABLE public.users`, c:'warn'});
+    }
+    if(optSingle){
+      steps.push({t:`pg_restore: BEGIN — single-transaction mode`, c:'info'});
+    }
+    steps.push({t:`pg_restore: creating SCHEMA "public"`, c:'info'});
+    steps.push({t:`pg_restore: creating TABLE "public.users"`, c:'info'});
+    steps.push({t:`pg_restore: processing data for table "public.users" (${backup.rowCounts.users} rows)`, c:'info'});
+    steps.push({t:`pg_restore: creating CONSTRAINT "users_pkey"`, c:'info'});
+    steps.push({t:`pg_restore: creating TABLE "public.products"`, c:'info'});
+    steps.push({t:`pg_restore: processing data for table "public.products" (${backup.rowCounts.products} rows)`, c:'info'});
+    steps.push({t:`pg_restore: creating CONSTRAINT "products_pkey"`, c:'info'});
+    steps.push({t:`pg_restore: creating TABLE "public.orders"`, c:'info'});
+    steps.push({t:`pg_restore: processing data for table "public.orders" (${backup.rowCounts.orders} rows)`, c:'info'});
+    steps.push({t:`pg_restore: creating CONSTRAINT "orders_pkey"`, c:'info'});
+    steps.push({t:`pg_restore: creating FOREIGN KEY "orders_user_id_fkey"`, c:'info'});
+    steps.push({t:`pg_restore: creating FOREIGN KEY "orders_product_id_fkey"`, c:'info'});
+    if(optSingle){
+      steps.push({t:`pg_restore: COMMIT`, c:'info'});
+    }
+    steps.push({t:`pg_restore: restore operation completed successfully`, c:'ok'});
+
+    let i = 0;
+    progressStatus.textContent = 'Merestorasi…';
+    const interval = setInterval(()=>{
+      if(i >= steps.length){
+        clearInterval(interval);
+        finishRestore(backup);
+        return;
+      }
+      const s = steps[i];
+      termLine(s.t, s.c);
+      i++;
+      const pct = Math.round((i/steps.length)*100);
+      progressFill.style.width = pct + '%';
+      progressPct.textContent = pct + '%';
+    }, 220);
+  }
+
+  function finishRestore(backup){
+    state = deepClone(backup.data);
+    persist();
+    progressStatus.textContent = 'Selesai';
+    restoring = false;
+    document.getElementById('btnStartRestore').disabled = false;
+    logActivity('RESTORE', `Database direstorasi dari "${backup.label}"`);
+    toast('Restorasi selesai. Database dikembalikan ke snapshot: ' + backup.label);
+    renderTable();
+    renderDashboard();
+  }
+
+  /* ============ QUERY CONSOLE ============ */
+  document.getElementById('btnRunQuery').addEventListener('click', ()=>{
+    const sql = document.getElementById('sqlInput').value.trim();
+    const resultEl = document.getElementById('queryResult');
+    const timingEl = document.getElementById('queryTiming');
+    const start = performance.now();
+
+    const match = sql.match(/from\s+(\w+)/i);
+    const isSelect = /^select/i.test(sql);
+
+    setTimeout(()=>{
+      const elapsed = (performance.now() - start).toFixed(1);
+      if(!isSelect || !match || !state[match[1].toLowerCase()]){
+        resultEl.innerHTML = `<div class="empty">Query tidak dikenali dalam demo ini. Coba: <code>SELECT * FROM users;</code>, <code>SELECT * FROM products;</code>, atau <code>SELECT * FROM orders;</code></div>`;
+        timingEl.textContent = '';
+        logActivity('QUERY', 'Query tidak dikenali dijalankan di konsol');
+        return;
+      }
+      const t = match[1].toLowerCase();
+      const cols = TABLE_COLUMNS[t];
+      const rows = state[t];
+      let html = '<div class="table-wrap"><table><thead><tr>' + cols.map(c=>`<th>${c}</th>`).join('') + '</tr></thead><tbody>';
+      html += rows.map(r => '<tr>' + cols.map(c=>{
+        let v = r[c];
+        if(c==='price' || c==='total') v = fmtRupiah(v);
+        if(c==='status') v = `<span class="pill ${v}">${v}</span>`;
+        return `<td>${v}</td>`;
+      }).join('') + '</tr>').join('');
+      html += '</tbody></table></div>';
+      resultEl.innerHTML = html;
+      timingEl.textContent = `${rows.length} baris dikembalikan dalam ${elapsed} ms`;
+      logActivity('QUERY', `${sql.slice(0,60)}`);
+    }, 260);
+  });
+
+  /* ============ INIT ============ */
+  renderDashboard();
+  renderTable();
+  renderBackups();
+  renderRestoreSelect();
+})();
+</script>
+</body>
+</html>
