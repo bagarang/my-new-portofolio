@@ -30,7 +30,7 @@
     --info: #5eb1ff;
   }
 
-  * { font-family: 'Space Grotesk', sans-serif; -webkit-font-smoothing: antialiased; }
+  * { font-family: 'Space Grotesk', sans-serif; -webkit-font-smoothing: antialiased; box-sizing: border-box; }
   .mono { font-family: 'JetBrains Mono', monospace; }
 
   body {
@@ -41,6 +41,7 @@
       radial-gradient(circle at 85% 100%, rgba(255, 180, 84, 0.04) 0%, transparent 50%);
     background-attachment: fixed;
     overflow: hidden;
+    margin: 0;
   }
 
   ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -194,7 +195,7 @@
   }
 
   .glass {
-    background: rgba(20, 23, 28, 0.65);
+    background: rgba(20, 23, 28, 0.85);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
   }
@@ -253,7 +254,7 @@
     30% { transform: translateY(-4px); opacity: 1; }
   }
 
-  .view { display: none; }
+  .view { display: none; flex: 1; flex-direction: column; height: 100%; overflow: hidden; }
   .view.active { display: flex; }
 
   .history-item:hover .history-actions { opacity: 1; }
@@ -351,12 +352,12 @@
 <div class="blob" style="background: #c5f82a; width: 500px; height: 500px; top: -150px; right: -100px; animation: float 18s ease-in-out infinite;"></div>
 <div class="blob" style="background: #ffb454; width: 400px; height: 400px; bottom: -100px; left: 200px; animation: float 22s ease-in-out infinite reverse;"></div>
 
-<div class="h-screen flex flex-col relative z-10">
+<div class="h-screen w-screen flex flex-col relative z-10 overflow-hidden">
 
-  <!-- Top Bar -->
-  <header class="glass border-b border-[var(--border)] flex items-center justify-between px-4 py-2.5 z-30">
-    <div class="flex items-center gap-3">
-      <div class="flex items-center gap-2.5">
+  <!-- ==================== TOP BAR ==================== -->
+  <header class="glass border-b border-[var(--border)] flex items-center justify-between px-4 py-2.5 z-30 flex-shrink-0 gap-3">
+    <div class="flex items-center gap-3 min-w-0 flex-wrap sm:flex-nowrap">
+      <div class="flex items-center gap-2.5 flex-shrink-0">
         <div class="w-7 h-7 rounded-lg bg-[var(--accent)] flex items-center justify-center relative">
           <svg viewBox="0 0 24 24" class="w-4 h-4 text-black" fill="currentColor">
             <path d="M12 2L4 7v10l8 5 8-5V7l-8-5zm0 2.3l5.5 3.4v8.6L12 19.7l-5.5-3.4V7.7L12 4.3z"/>
@@ -368,41 +369,40 @@
           <div class="text-[10px] text-[var(--fg-dim)] leading-tight mono">v2.4.1 · workspace</div>
         </div>
       </div>
-      <div class="h-5 w-px bg-[var(--border)]"></div>
-      <nav class="flex items-center gap-1 text-xs">
-        <button class="px-2.5 py-1 rounded text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--surface)] transition">File</button>
-        <button class="px-2.5 py-1 rounded text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--surface)] transition">Edit</button>
-        <button class="px-2.5 py-1 rounded text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--surface)] transition">View</button>
-        <button class="px-2.5 py-1 rounded text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--surface)] transition">Run</button>
-        <button class="px-2.5 py-1 rounded text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--surface)] transition">Help</button>
-
-        <!-- CLUE: Tambahkan script ini di bawah Help -->
-        <a href="index.html" class="px-2.5 py-1 rounded text-[var(--accent)] border border-[var(--accent)] hover:bg-[var(--accent)] hover:text-black transition font-bold ml-2">Back ke portofolio</a>
+      <div class="h-5 w-px bg-[var(--border)] hidden sm:block"></div>
+      <nav class="flex items-center gap-1 text-xs overflow-x-auto py-1">
+        <button class="px-2.5 py-1 rounded text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--surface)] transition whitespace-nowrap">File</button>
+        <button class="px-2.5 py-1 rounded text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--surface)] transition whitespace-nowrap">Edit</button>
+        <button class="px-2.5 py-1 rounded text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--surface)] transition whitespace-nowrap">View</button>
+        <button class="px-2.5 py-1 rounded text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--surface)] transition whitespace-nowrap">Run</button>
+        <button class="px-2.5 py-1 rounded text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--surface)] transition whitespace-nowrap">Help</button>
+        <a href="index.html" class="px-2.5 py-1 rounded text-[var(--accent)] border border-[var(--accent)] hover:bg-[var(--accent)] hover:text-black transition font-bold ml-1 whitespace-nowrap">Back ke portofolio</a>
       </nav>
     </div>
 
-    <div class="flex items-center gap-3">
-      <div class="flex items-center gap-2 px-2.5 py-1 rounded-md bg-[var(--surface)] border border-[var(--border)]">
+    <div class="flex items-center gap-2 flex-shrink-0">
+      <div class="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-md bg-[var(--surface)] border border-[var(--border)]">
         <div class="status-dot"></div>
         <span class="text-[11px] text-[var(--fg-muted)] mono">API Connected</span>
         <span class="text-[10px] text-[var(--fg-dim)] mono">·</span>
         <span class="text-[11px] text-[var(--fg-dim)] mono">12ms</span>
       </div>
-      <button onclick="toggleModal('shortcuts')" class="btn-ghost px-2.5 py-1.5 rounded-md text-xs flex items-center gap-1.5" data-tooltip="Keyboard shortcuts">
+      <button onclick="toggleModal('shortcuts')" class="btn-ghost p-2 rounded-md text-xs flex items-center justify-center" data-tooltip="Keyboard shortcuts">
         <i data-lucide="keyboard" class="w-3.5 h-3.5"></i>
       </button>
       <button onclick="toggleModal('settings')" class="btn-ghost px-2.5 py-1.5 rounded-md text-xs flex items-center gap-1.5">
         <i data-lucide="settings" class="w-3.5 h-3.5"></i>
-        <span>Settings</span>
+        <span class="hidden sm:inline">Settings</span>
       </button>
-      <div class="w-7 h-7 rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--warm)] flex items-center justify-center text-[10px] font-bold text-black">RA</div>
+      <div class="w-7 h-7 rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--warm)] flex items-center justify-center text-[10px] font-bold text-black flex-shrink-0">RA</div>
     </div>
   </header>
 
-  <div class="flex-1 flex overflow-hidden">
+  <!-- ==================== APP BODY (CONTAINER UTAMA) ==================== -->
+  <div class="flex-1 flex overflow-hidden relative">
 
-    <!-- Left Sidebar -->
-    <aside class="w-56 border-r border-[var(--border)] bg-[var(--bg-elevated)] flex flex-col">
+    <!-- ==================== LEFT SIDEBAR ==================== -->
+    <aside class="w-56 border-r border-[var(--border)] bg-[var(--bg-elevated)] flex flex-col flex-shrink-0 z-20">
       <div class="p-3">
         <button onclick="newConversation()" class="w-full btn-accent px-3 py-2 rounded-md text-xs flex items-center justify-center gap-2">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
@@ -410,8 +410,8 @@
         </button>
       </div>
 
-      <nav class="px-2 flex-1 overflow-y-auto">
-        <div class="text-[10px] uppercase tracking-wider text-[var(--fg-dim)] px-2 py-2 mono">Workspace</div>
+      <nav class="px-2 flex-1 overflow-y-auto space-y-0.5">
+        <div class="text-[10px] uppercase tracking-wider text-[var(--fg-dim)] px-2 py-1.5 mono">Workspace</div>
         <button data-view="chat" class="nav-btn sidebar-item active w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-r-md">
           <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
           <span>Chat</span>
@@ -438,10 +438,10 @@
           <span>Datasets</span>
         </button>
 
-        <div class="text-[10px] uppercase tracking-wider text-[var(--fg-dim)] px-2 py-2 mt-3 mono">Recent</div>
+        <div class="text-[10px] uppercase tracking-wider text-[var(--fg-dim)] px-2 py-1.5 mt-3 mono">Recent</div>
         <div id="recent-list" class="space-y-0.5"></div>
 
-        <div class="text-[10px] uppercase tracking-wider text-[var(--fg-dim)] px-2 py-2 mt-3 mono">Pinned</div>
+        <div class="text-[10px] uppercase tracking-wider text-[var(--fg-dim)] px-2 py-1.5 mt-3 mono">Pinned</div>
         <button class="sidebar-item w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-r-md text-[var(--fg-muted)]">
           <i data-lucide="pin" class="w-3 h-3 text-[var(--warm)]"></i>
           <span class="truncate">Research notes — Q4</span>
@@ -452,7 +452,7 @@
         </button>
       </nav>
 
-      <div class="p-3 border-t border-[var(--border)]">
+      <div class="p-3 border-t border-[var(--border)] flex-shrink-0">
         <div class="flex items-center justify-between text-[10px] text-[var(--fg-dim)] mono mb-2">
           <span>USAGE THIS MONTH</span>
           <span>1.2M / 5M</span>
@@ -467,20 +467,20 @@
       </div>
     </aside>
 
-    <!-- Main Content -->
-    <main class="flex-1 flex overflow-hidden bg-[var(--bg)]">
+    <!-- ==================== MAIN VIEWS CONTAINER ==================== -->
+    <main class="flex-1 flex overflow-hidden bg-[var(--bg)] relative min-w-0">
 
-      <!-- ============ CHAT VIEW ============ -->
-      <div id="view-chat" class="view active flex-1 flex flex-col">
-        <!-- Chat header -->
-        <div class="border-b border-[var(--border)] px-6 py-3 flex items-center justify-between glass">
-          <div class="flex items-center gap-3">
-            <div>
+      <!-- ============ TAB 1: CHAT VIEW ============ -->
+      <div id="view-chat" class="view active flex-col h-full">
+        <!-- Header Chat -->
+        <div class="border-b border-[var(--border)] px-6 py-3 flex items-center justify-between glass flex-shrink-0">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="min-w-0">
               <div class="flex items-center gap-2">
-                <h2 class="text-sm font-semibold" id="chat-title">Untitled Conversation</h2>
-                <span class="badge badge-accent">LIVE</span>
+                <h2 class="text-sm font-semibold truncate" id="chat-title">Untitled Conversation</h2>
+                <span class="badge badge-accent flex-shrink-0">LIVE</span>
               </div>
-              <div class="text-[11px] text-[var(--fg-dim)] mt-0.5 flex items-center gap-2 mono">
+              <div class="text-[11px] text-[var(--fg-dim)] mt-0.5 flex items-center gap-2 mono flex-wrap">
                 <span>model: <span class="text-[var(--accent)]" id="header-model">nexus-pro-1.5</span></span>
                 <span>·</span>
                 <span>ctx: 8K tokens</span>
@@ -489,7 +489,7 @@
               </div>
             </div>
           </div>
-          <div class="flex items-center gap-1.5">
+          <div class="flex items-center gap-1.5 flex-shrink-0">
             <button onclick="exportConversation()" class="btn-ghost px-2.5 py-1.5 rounded-md text-xs flex items-center gap-1.5" data-tooltip="Export conversation">
               <i data-lucide="download" class="w-3.5 h-3.5"></i>
             </button>
@@ -507,10 +507,9 @@
           </div>
         </div>
 
-        <!-- Chat messages -->
-        <div id="chat-messages" class="flex-1 overflow-y-auto grid-bg">
-          <div class="max-w-3xl mx-auto px-6 py-8">
-
+        <!-- Chat messages area -->
+        <div id="chat-messages" class="flex-1 overflow-y-auto grid-bg p-6">
+          <div class="max-w-3xl mx-auto">
             <!-- Welcome state -->
             <div id="welcome-state" class="text-center py-12">
               <div class="inline-flex w-14 h-14 rounded-2xl bg-[var(--accent-dim)] border border-[rgba(197,248,42,0.2)] items-center justify-center mb-4 pulse-ring">
@@ -519,7 +518,7 @@
               <h1 class="text-2xl font-semibold mb-2">Selamat datang di Nexus AI Studio</h1>
               <p class="text-sm text-[var(--fg-muted)] max-w-md mx-auto mb-8">Workspace AI lengkap untuk eksperimen, prototype, dan produksi. Mulai dengan mengetik pertanyaan atau pilih template di bawah.</p>
 
-              <div class="grid grid-cols-2 gap-2 max-w-xl mx-auto">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-xl mx-auto">
                 <button onclick="useTemplate('code')" class="text-left p-3 rounded-lg bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent)] transition group">
                   <div class="flex items-center gap-2 mb-1">
                     <i data-lucide="code-2" class="w-3.5 h-3.5 text-[var(--accent)]"></i>
@@ -551,7 +550,7 @@
               </div>
             </div>
 
-            <!-- Messages will be inserted here -->
+            <!-- Messages container -->
             <div id="messages-container" class="space-y-6"></div>
 
             <!-- Thinking indicator -->
@@ -566,8 +565,8 @@
           </div>
         </div>
 
-        <!-- Chat input -->
-        <div class="border-t border-[var(--border)] glass">
+        <!-- Chat Input Form -->
+        <div class="border-t border-[var(--border)] glass flex-shrink-0">
           <div class="max-w-3xl mx-auto px-6 py-4">
             <div class="relative">
               <textarea
@@ -593,7 +592,7 @@
               <div class="flex items-center gap-3">
                 <span><span id="char-count">0</span> chars</span>
                 <span>~<span id="token-count">0</span> tokens</span>
-                <span class="flex items-center gap-1">
+                <span class="flex items-center gap-1 hidden sm:flex">
                   <i data-lucide="zap" class="w-3 h-3"></i>
                   Streaming on
                 </span>
@@ -607,9 +606,9 @@
         </div>
       </div>
 
-      <!-- ============ GENERATE VIEW ============ -->
-      <div id="view-generate" class="view flex-1 flex flex-col">
-        <div class="border-b border-[var(--border)] px-6 py-3 flex items-center justify-between glass">
+      <!-- ============ TAB 2: GENERATE VIEW ============ -->
+      <div id="view-generate" class="view flex-col h-full">
+        <div class="border-b border-[var(--border)] px-6 py-3 flex items-center justify-between glass flex-shrink-0">
           <div>
             <h2 class="text-sm font-semibold flex items-center gap-2">
               <i data-lucide="sparkles" class="w-4 h-4 text-[var(--accent)]"></i>
@@ -676,16 +675,14 @@
               <span class="text-[11px] text-[var(--fg-dim)] mono">Est. ~3 generations · ~2,400 tokens · cost ~$0.04</span>
             </div>
 
-            <div id="batch-results" class="space-y-3 hidden">
-              <!-- Results akan muncul di sini -->
-            </div>
+            <div id="batch-results" class="space-y-3 hidden"></div>
           </div>
         </div>
       </div>
 
-      <!-- ============ MODELS VIEW ============ -->
-      <div id="view-models" class="view flex-1 flex flex-col">
-        <div class="border-b border-[var(--border)] px-6 py-3 glass">
+      <!-- ============ TAB 3: MODELS VIEW ============ -->
+      <div id="view-models" class="view flex-col h-full">
+        <div class="border-b border-[var(--border)] px-6 py-3 glass flex-shrink-0">
           <h2 class="text-sm font-semibold flex items-center gap-2">
             <i data-lucide="cpu" class="w-4 h-4 text-[var(--accent)]"></i>
             Model Registry
@@ -694,7 +691,7 @@
         </div>
         <div class="flex-1 overflow-y-auto p-6">
           <div class="max-w-5xl mx-auto">
-            <div class="grid grid-cols-3 gap-3 mb-6">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
               <div class="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-4">
                 <div class="text-[10px] text-[var(--fg-dim)] mono uppercase">Available</div>
                 <div class="text-2xl font-bold mt-1">12</div>
@@ -709,14 +706,14 @@
               </div>
             </div>
 
-            <div id="models-grid" class="grid grid-cols-2 gap-3"></div>
+            <div id="models-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
           </div>
         </div>
       </div>
 
-      <!-- ============ HISTORY VIEW ============ -->
-      <div id="view-history" class="view flex-1 flex flex-col">
-        <div class="border-b border-[var(--border)] px-6 py-3 flex items-center justify-between glass">
+      <!-- ============ TAB 4: HISTORY VIEW ============ -->
+      <div id="view-history" class="view flex-col h-full">
+        <div class="border-b border-[var(--border)] px-6 py-3 flex items-center justify-between glass flex-shrink-0 flex-wrap gap-2">
           <div>
             <h2 class="text-sm font-semibold flex items-center gap-2">
               <i data-lucide="history" class="w-4 h-4 text-[var(--accent)]"></i>
@@ -727,7 +724,7 @@
           <div class="flex items-center gap-2">
             <div class="relative">
               <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--fg-dim)]"></i>
-              <input id="history-search" placeholder="Search history..." class="bg-[var(--surface)] border border-[var(--border)] rounded-md pl-8 pr-3 py-1.5 text-xs w-56">
+              <input id="history-search" placeholder="Search history..." class="bg-[var(--surface)] border border-[var(--border)] rounded-md pl-8 pr-3 py-1.5 text-xs w-48 sm:w-56">
             </div>
             <button class="btn-ghost px-2.5 py-1.5 rounded-md text-xs flex items-center gap-1.5">
               <i data-lucide="filter" class="w-3.5 h-3.5"></i>
@@ -739,9 +736,9 @@
         </div>
       </div>
 
-      <!-- ============ TEMPLATES VIEW ============ -->
-      <div id="view-templates" class="view flex-1 flex flex-col">
-        <div class="border-b border-[var(--border)] px-6 py-3 glass">
+      <!-- ============ TAB 5: TEMPLATES VIEW ============ -->
+      <div id="view-templates" class="view flex-col h-full">
+        <div class="border-b border-[var(--border)] px-6 py-3 glass flex-shrink-0">
           <h2 class="text-sm font-semibold flex items-center gap-2">
             <i data-lucide="layout-template" class="w-4 h-4 text-[var(--accent)]"></i>
             Prompt Templates
@@ -749,13 +746,13 @@
           <p class="text-[11px] text-[var(--fg-dim)] mt-0.5">Mulai cepat dengan template siap pakai</p>
         </div>
         <div class="flex-1 overflow-y-auto p-6">
-          <div id="templates-grid" class="max-w-5xl mx-auto grid grid-cols-3 gap-3"></div>
+          <div id="templates-grid" class="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
         </div>
       </div>
 
-      <!-- ============ DATASETS VIEW ============ -->
-      <div id="view-datasets" class="view flex-1 flex flex-col">
-        <div class="border-b border-[var(--border)] px-6 py-3 flex items-center justify-between glass">
+      <!-- ============ TAB 6: DATASETS VIEW ============ -->
+      <div id="view-datasets" class="view flex-col h-full">
+        <div class="border-b border-[var(--border)] px-6 py-3 flex items-center justify-between glass flex-shrink-0">
           <div>
             <h2 class="text-sm font-semibold flex items-center gap-2">
               <i data-lucide="database" class="w-4 h-4 text-[var(--accent)]"></i>
@@ -775,9 +772,9 @@
 
     </main>
 
-    <!-- Right Panel - Parameters -->
-    <aside id="right-panel" class="w-80 border-l border-[var(--border)] bg-[var(--bg-elevated)] flex flex-col overflow-y-auto">
-      <div class="p-4 border-b border-[var(--border)] flex items-center justify-between">
+    <!-- ==================== RIGHT PANEL (PARAMETERS) ==================== -->
+    <aside id="right-panel" class="w-80 border-l border-[var(--border)] bg-[var(--bg-elevated)] flex flex-col overflow-y-auto flex-shrink-0 z-20">
+      <div class="p-4 border-b border-[var(--border)] flex items-center justify-between flex-shrink-0">
         <h3 class="text-xs font-semibold uppercase tracking-wider mono">Run Parameters</h3>
         <button onclick="toggleRightPanel()" class="text-[var(--fg-dim)] hover:text-[var(--fg)]">
           <i data-lucide="x" class="w-4 h-4"></i>
@@ -785,7 +782,6 @@
       </div>
 
       <div class="p-4 space-y-5 flex-1">
-
         <!-- Model Selector -->
         <div>
           <label class="text-[10px] uppercase tracking-wider text-[var(--fg-dim)] mono mb-2 block">Model</label>
@@ -906,10 +902,9 @@
             </div>
           </div>
         </details>
-
       </div>
 
-      <div class="p-4 border-t border-[var(--border)] space-y-2">
+      <div class="p-4 border-t border-[var(--border)] space-y-2 flex-shrink-0">
         <div class="flex items-center justify-between text-[11px]">
           <span class="text-[var(--fg-dim)] mono">Estimated cost</span>
           <span class="mono text-[var(--accent)]" id="cost-estimate">$0.0024</span>
@@ -925,6 +920,7 @@
 
 </div>
 
+<!-- ==================== MODALS ==================== -->
 <!-- Modal: Settings -->
 <div id="modal-settings" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop">
   <div class="bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl w-full max-w-lg mx-4 shadow-2xl">
@@ -1031,29 +1027,27 @@ const datasets = [
 // =================== AI RESPONSE ENGINE ===================
 function generateAIResponse(userInput) {
   const input = userInput.toLowerCase();
-  const temp = parseFloat(document.getElementById('temperature').value);
   const model = state.currentModel;
 
-  // Detect intent
   if (/halo|hai|hello|hi|selamat/.test(input) && input.length < 30) {
     return `Halo! 👋 Saya ${model}, siap membantu Anda hari ini.\n\nSaya bisa membantu dengan:\n- **Menulis kode** dalam berbagai bahasa\n- **Menjelaskan konsep** teknis maupun umum\n- **Menganalisis data** dan memberikan insight\n- **Menulis konten** — artikel, email, dokumentasi\n\nApa yang ingin Anda kerjakan?`;
   }
 
   if (/buat|generate|implementasi|code|fungsi|function|komponen|class/.test(input) && /javascript|js|python|react|vue|html|css|java|go|rust|typescript|ts/.test(input)) {
     const lang = /python/.test(input) ? 'python' : /react|jsx/.test(input) ? 'jsx' : /typescript|\bts\b/.test(input) ? 'typescript' : 'javascript';
-    return `Tentu! Berikut implementasi dalam ${lang}:\n\n\`\`\`${lang}\n${getCodeTemplate(input, lang)}\n\`\`\`\n\n**Penjelasan:**\nKode di atas menggunakan pendekatan fungsional dengan mempertimbangkan:\n1. **Immutability** — tidak mengubah state secara langsung\n2. **Type safety** — semua parameter divalidasi\n3. **Error handling** — edge cases tertangani dengan baik\n\nAnda bisa menyesuaikan parameter \`options\` sesuai kebutuhan. Apakah ada bagian yang ingin diperdalam?`;
+    return `Tentu! Berikut implementasi dalam ${lang}:\n\n\`\`\`${lang}\n${getCodeTemplate(input, lang)}\n\`\`\`\n\n**Penjelasan:**\nKode di atas menggunakan pendekatan fungsional dengan mempertimbangkan:\n1. **Immutability** — tidak mengubah state secara langsung\n2. **Type safety** — semua parameter divalidasi\n3. **Error handling** — edge cases tertangani dengan baik`;
   }
 
   if (/jelaskan|apa itu|bagaimana|kenapa|mengapa|explain/.test(input)) {
-    return `Pertanyaan yang bagus! Mari saya jelaskan secara bertahap.\n\n**Inti konsep:**\n${getExplanationTopic(input)}\n\n**Analogi sederhana:**\nBayangkan seperti mengatur antrian di bank — setiap permintaan diproses sesuai urutan, tapi sistem pintar bisa memprioritaskan yang lebih urgent.\n\n**Poin penting:**\n- Setiap komponen memiliki peran spesifik\n- Mereka berkomunikasi melalui protokol yang jelas\n- Failure di satu titik tidak harus merusak seluruh sistem\n\nApakah penjelasan ini cukup, atau Anda ingin saya perdalam bagian tertentu?`;
+    return `Pertanyaan yang bagus! Mari saya jelaskan secara bertahap.\n\n**Inti konsep:**\n${getExplanationTopic(input)}\n\n**Analogi sederhana:**\nBayangkan seperti mengatur antrian di bank — setiap permintaan diproses sesuai urutan, tapi sistem pintar bisa memprioritaskan yang lebih urgent.`;
   }
 
   if (/tulis|buat.*artikel|draft|email|konten|content/.test(input)) {
-    return `Berikut draft yang saya buat:\n\n---\n\n${getContentDraft(input)}\n\n---\n\nDraft di atas menggunakan tone yang profesional namun engaging. Beberapa hal yang bisa Anda sesuaikan:\n- **Panjang paragraf** — bisa dipersingkat untuk readability\n- **Call-to-action** — sesuaikan dengan tujuan spesifik\n- **Personalisasi** — tambahkan nama atau konteks pribadi\n\nMau saya revisi bagian tertentu?`;
+    return `Berikut draft yang saya buat:\n\n---\n\n${getContentDraft(input)}\n\n---\n\nDraft di atas menggunakan tone yang profesional namun engaging.`;
   }
 
   if (/analisis|analysis|data|tren|insight/.test(input)) {
-    return `Berdasarkan analisis data yang Anda berikan, berikut insight utamanya:\n\n**1. Tren Utama (+18.3% QoQ)**\nTerjadi pertumbuhan signifikan di kategori produk digital, didorong oleh kampanye Q3.\n\n**2. Pola Musiman**\n- Puncak transaksi: Jumat-Sabtu malam\n- Penurunan: awal bulan (possible: gajian cycle)\n- Recovery: pertengahan bulan\n\n**3. Segmentasi Pelanggan**\n| Segment | Kontribusi | Growth |\n|---------|-----------|--------|\n| Premium | 42% | +24% |\n| Regular | 38% | +12% |\n| New | 20% | +58% |\n\n**Rekomendasi strategis:**\n1. Tingkatkan inventory untuk kategori digital\n2. Optimalisasi promo mid-month untuk segment Regular\n3. Investasi lebih agresif di akuisisi New user\n\nMau saya buat visualisasi atau perdalam segment tertentu?`;
+    return `Berdasarkan analisis data yang Anda berikan, berikut insight utamanya:\n\n**1. Tren Utama (+18.3% QoQ)**\nTerjadi pertumbuhan signifikan di kategori produk digital, didorong oleh kampanye Q3.`;
   }
 
   if (/terima kasih|thanks|makasih|tq/.test(input)) {
@@ -1061,44 +1055,25 @@ function generateAIResponse(userInput) {
   }
 
   if (/siapa kamu|kamu siapa|apa kamu|model apa/.test(input)) {
-    return `Saya **${model}** — model AI yang berjalan di Nexus AI Studio.\n\nSpesifikasi saya:\n- Context window: 128K tokens\n- Multimodal: text, code, dan image understanding\n- Optimized untuk: chat, reasoning, code generation\n- Knowledge cutoff: terus diperbarui\n\nSaya dirancang untuk membantu Anda dengan eksperimen, prototyping, dan produksi. Setiap percakapan di sini bisa Anda export, version, atau deploy ke production API.`;
+    return `Saya **${model}** — model AI yang berjalan di Nexus AI Studio.\n\nSpesifikasi saya:\n- Context window: 128K tokens\n- Multimodal: text, code, dan image understanding\n- Optimized untuk: chat, reasoning, code generation`;
   }
 
-  // Default response
-  return `Saya memahami Anda bertanya tentang: "${userInput.substring(0, 80)}${userInput.length > 80 ? '...' : ''}"\n\nBerdasarkan konteksnya, ada beberapa sudut pandang yang bisa saya tawarkan:\n\n**Pertama**, dari sisi teknis — masalah ini melibatkan trade-off antara performa dan maintainability. Solusi optimal biasanya yang sederhana tapi extensible.\n\n**Kedua**, dari sisi praktis — implementasi yang baik harus mempertimbangkan:\n- Skalabilitas jangka panjang\n- Kemudahan debugging\n- Dokumentasi yang jelas\n\n**Ketiga**, dari sisi user experience — apapun pilihannya, pastikan dampak ke end user minimal atau malah positif.\n\nMau saya fokus pada aspek tertentu? Atau Anda bisa beri konteks lebih spesifik supaya jawaban saya lebih actionable.`;
+  return `Saya memahami Anda bertanya tentang: "${userInput.substring(0, 80)}${userInput.length > 80 ? '...' : ''}"\n\nBerdasarkan konteksnya, solusi optimal biasanya melibatkan trade-off antara performa dan maintainability.`;
 }
 
 function getCodeTemplate(input, lang) {
   if (lang === 'python') {
-    return `from typing import List, Optional\nfrom dataclasses import dataclass\n\n@dataclass\nclass ProcessingResult:\n    success: bool\n    data: List[dict]\n    error: Optional[str] = None\n\ndef process_items(\n    items: List[dict],\n    batch_size: int = 100,\n    raise_on_error: bool = False\n) -> ProcessingResult:\n    """Process items in batches with error handling."""\n    results = []\n    \n    for i in range(0, len(items), batch_size):\n        batch = items[i:i + batch_size]\n        try:\n            processed = [transform(item) for item in batch]\n            results.extend(processed)\n        except Exception as e:\n            if raise_on_error:\n                raise\n            return ProcessingResult(False, results, str(e))\n    \n    return ProcessingResult(True, results)\n\n\ndef transform(item: dict) -> dict:\n    return {\n        **item,\n        "processed_at": __import__("time").time(),\n        "version": "1.0"\n    }`;
+    return `from typing import List, Optional\nfrom dataclasses import dataclass\n\n@dataclass\nclass ProcessingResult:\n    success: bool\n    data: List[dict]\n    error: Optional[str] = None`;
   }
-  if (lang === 'jsx') {
-    return `import { useState, useEffect, useCallback } from 'react';\n\nexport function useDebounce<T>(\n  value: T,\n  delay: number = 500\n): T {\n  const [debounced, setDebounced] = useState<T>(value);\n\n  useEffect(() => {\n    const timer = setTimeout(() => {\n      setDebounced(value);\n    }, delay);\n\n    return () => clearTimeout(timer);\n  }, [value, delay]);\n\n  return debounced;\n}\n\n// Penggunaan:\n// const debouncedQuery = useDebounce(query, 300);`;
-  }
-  if (lang === 'typescript') {
-    return `type Result<T> = {\n  success: true;\n  data: T;\n} | {\n  success: false;\n  error: string;\n};\n\nasync function fetchSafe<T>(\n  url: string,\n  options?: RequestInit\n): Promise<Result<T>> {\n  try {\n    const res = await fetch(url, options);\n    if (!res.ok) {\n      return { success: false, error: \`HTTP \${res.status}\` };\n    }\n    const data = await res.json() as T;\n    return { success: true, data };\n  } catch (e) {\n    return { success: false, error: (e as Error).message };\n  }\n}`;
-  }
-  return `function debounce(fn, delay = 300, options = {}) {\n  const { leading = false, trailing = true } = options;\n  let timer = null;\n  let invoked = false;\n\n  return function (...args) {\n    if (leading && !invoked) {\n      fn.apply(this, args);\n      invoked = true;\n    }\n\n    clearTimeout(timer);\n    timer = setTimeout(() => {\n      if (trailing) fn.apply(this, args);\n      invoked = false;\n    }, delay);\n  };\n}\n\n// Contoh penggunaan\nconst handleSearch = debounce((query) => {\n  console.log('Searching:', query);\n}, 500);`;
+  return `function debounce(fn, delay = 300) {\n  let timer = null;\n  return function (...args) {\n    clearTimeout(timer);\n    timer = setTimeout(() => fn.apply(this, args), delay);\n  };\n}`;
 }
 
 function getExplanationTopic(input) {
-  if (/transformer|neural|deep learning|ai|machine learning/.test(input)) {
-    return 'Transformer adalah arsitektur neural network yang menggunakan mekanisme *self-attention* untuk memproses input secara paralel, tidak seperti RNN yang sekuensial. Ini memungkinkan model memahami konteks jangka panjang dengan lebih efisien.';
-  }
-  if (/blockchain|crypto|web3/.test(input)) {
-    return 'Blockchain adalah database terdistribusi yang menyimpan transaksi dalam blok-blok terhubung menggunakan kriptografi. Setiap blok berisi hash dari blok sebelumnya, membuatnya tamper-proof.';
-  }
-  if (/database|sql|indexing/.test(input)) {
-    return 'Indexing di database seperti indeks buku — alih-alih memindai setiap halaman, sistem melihat indeks untuk menemukan lokasi data cepat. Trade-off-nya: write lebih lambat, tapi read jauh lebih cepat.';
-  }
-  return 'Konsep ini pada dasarnya adalah tentang memecah masalah kompleks menjadi bagian-bagian yang lebih kecil dan terkelola, lalu menyusunnya kembali menjadi solusi yang kohes.';
+  return 'Transformer adalah arsitektur neural network yang menggunakan mekanisme self-attention untuk memproses input secara paralel, memungkinkan pemahaman konteks jangka panjang.';
 }
 
 function getContentDraft(input) {
-  if (/email/.test(input)) {
-    return `**Subjek: Kerjasama Strategis untuk Pertumbuhan Bersama**\n\nHalo [Nama],\n\nSemoga email ini menemukan Anda dalam keadaan baik.\n\nSaya menulis untuk memperkenalkan [Perusahaan Kami] — platform SaaS yang membantu tim seperti Anda mengotomatisasi workflow dan meningkatkan produktivitas hingga 40%.\n\nSetelah melihat profil [Perusahaan Mereka], saya melihat beberapa area potensial kolaborasi:\n- Integrasi API untuk existing stack Anda\n- Co-marketing campaign Q1 2025\n- Pilot program untuk tim engineering\n\nApakah Anda tersedia untuk brief call 15 menit minggu depan? Saya bisa flexible sesuai jadwal Anda.\n\nTerima kasih atas waktunya.\n\nSalam hangat,\n[Raafi]`;
-  }
-  return `**Judul: Panduan Praktis untuk Memulai**\n\nDi era digital yang bergerak cepat ini, kemampuan beradaptasi menjadi kunci. Artikel ini akan membahas strategi praktis yang bisa Anda terapkan segera.\n\nParagraf pembuka ini menarik perhatian pembaca dengan promise jelas: ada nilai konkret yang akan mereka dapatkan. Selanjutnya, kita bisa masuk ke poin-poin utama dengan struktur yang mudah dipindai.\n\n**Poin pertama:** mulai dari fondasi yang kuat.\n**Poin kedua:** iterasi cepat, jangan perfectionis di awal.\n**Poin ketiga:** ukur, evaluasi, tingkatkan.\n\nPenutup yang memotivasi pembaca untuk bertindak.`;
+  return `**Subjek: Kerjasama Strategis untuk Pertumbuhan Bersama**\n\nHalo,\n\nSemoga email ini menemukan Anda dalam keadaan baik.`;
 }
 
 // =================== VIEW SWITCHING ===================
@@ -1131,30 +1106,22 @@ function sendMessage() {
   const text = input.value.trim();
   if (!text || state.isGenerating) return;
 
-  // Hide welcome
   document.getElementById('welcome-state').classList.add('hidden');
-
-  // Add user message
   addMessage('user', text);
   state.messages.push({ role: 'user', content: text });
 
-  // Clear input
   input.value = '';
   updateCharCount();
-
-  // Show thinking
   showThinking();
 
-  // Generate response
   state.isGenerating = true;
   document.getElementById('send-btn').disabled = true;
 
-  const thinkingTime = 400 + Math.random() * 800;
   setTimeout(() => {
     hideThinking();
     const response = generateAIResponse(text);
     streamResponse(response);
-  }, thinkingTime);
+  }, 600);
 }
 
 function streamResponse(text) {
@@ -1176,20 +1143,6 @@ function streamResponse(text) {
           <span class="text-[10px] text-[var(--fg-dim)] mono">just now</span>
         </div>
         <div class="markdown text-sm leading-relaxed text-[var(--fg)]" id="streaming-content"></div>
-        <div class="flex items-center gap-1 mt-2 opacity-0 transition" id="msg-actions">
-          <button class="text-[var(--fg-dim)] hover:text-[var(--accent)] p-1" data-tooltip="Copy" onclick="copyMessage(this)">
-            <i data-lucide="copy" class="w-3 h-3"></i>
-          </button>
-          <button class="text-[var(--fg-dim)] hover:text-[var(--accent)] p-1" data-tooltip="Regenerate">
-            <i data-lucide="refresh-cw" class="w-3 h-3"></i>
-          </button>
-          <button class="text-[var(--fg-dim)] hover:text-[var(--accent)] p-1" data-tooltip="Good response">
-            <i data-lucide="thumbs-up" class="w-3 h-3"></i>
-          </button>
-          <button class="text-[var(--fg-dim)] hover:text-[var(--accent)] p-1" data-tooltip="Bad response">
-            <i data-lucide="thumbs-down" class="w-3 h-3"></i>
-          </button>
-        </div>
       </div>
     </div>
   `;
@@ -1199,16 +1152,12 @@ function streamResponse(text) {
   contentEl.classList.add('typing-cursor');
   lucide.createIcons();
 
-  // Stream character by character
   let index = 0;
-  const chunkSize = 3; // characters per tick
   const interval = setInterval(() => {
-    const chunk = text.substring(index, index + chunkSize);
-    index += chunkSize;
+    index += 4;
     const partial = text.substring(0, index);
     contentEl.innerHTML = renderMarkdown(partial);
     
-    // Scroll to bottom
     const chat = document.getElementById('chat-messages');
     chat.scrollTop = chat.scrollHeight;
 
@@ -1216,77 +1165,26 @@ function streamResponse(text) {
       clearInterval(interval);
       contentEl.classList.remove('typing-cursor');
       contentEl.innerHTML = renderMarkdown(text);
-      msgEl.querySelector('#msg-actions').style.opacity = '1';
-      msgEl.querySelector('#msg-actions').style.pointerEvents = 'auto';
       lucide.createIcons();
       
       state.messages.push({ role: 'assistant', content: text });
       state.isGenerating = false;
       document.getElementById('send-btn').disabled = false;
       updateMsgCount();
-      
-      // Save to history
       saveToHistory();
-      
-      // Update cost estimate
       updateCostEstimate();
     }
-  }, 18);
+  }, 15);
 }
 
 function renderMarkdown(text) {
-  // Simple markdown rendering
   let html = text;
-  
-  // Code blocks
-  html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
-    return `<div class="code-block my-3">${highlightCode(code, lang)}</div>`;
-  });
-  
-  // Inline code
+  html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => `<div class="code-block my-3">${code}</div>`);
   html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-  
-  // Bold
   html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  
-  // Headers
   html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
-  
-  // Tables
-  if (/\|.*\|/.test(html)) {
-    html = html.replace(/\|(.+)\|/g, (match) => {
-      const cells = match.split('|').filter(c => c.trim());
-      if (cells.length === 0) return match;
-      return '<div style="display:flex;gap:1rem">' + cells.map(c => `<span style="flex:1">${c}</span>`).join('') + '</div>';
-    });
-  }
-  
-  // Lists
-  html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
-  html = html.replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>');
-  
-  // Numbers
-  html = html.replace(/^\d+\.\s(.+)$/gm, '<li>$1</li>');
-  
-  // Paragraphs
-  html = html.split('\n\n').map(p => {
-    if (p.startsWith('<')) return p;
-    return `<p>${p.replace(/\n/g, '<br>')}</p>`;
-  }).join('');
-  
+  html = html.split('\n\n').map(p => p.startsWith('<') ? p : `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
   return html;
-}
-
-function highlightCode(code, lang) {
-  // Simple syntax highlighting
-  let highlighted = code
-    .replace(/\b(function|const|let|var|return|if|else|for|while|class|import|export|from|async|await|def|if|elif|else|return|import|from|class|public|private|static|void|int|string|bool|true|false|null|None|True|False)\b/g, '<span class="kw">$1</span>')
-    .replace(/(["'`])((?:\\.|(?!\1).)*)\1/g, '<span class="str">$1$2$1</span>')
-    .replace(/\/\/.*/g, '<span class="com">$&</span>')
-    .replace(/#.*$/gm, '<span class="com">$&</span>')
-    .replace(/\b(\d+\.?\d*)\b/g, '<span class="num">$1</span>');
-  
-  return highlighted;
 }
 
 function addMessage(role, content) {
@@ -1308,13 +1206,9 @@ function addMessage(role, content) {
       </div>
     `;
   }
-  
   container.appendChild(msgEl);
-  
-  // Scroll
   const chat = document.getElementById('chat-messages');
   chat.scrollTop = chat.scrollHeight;
-  
   updateMsgCount();
 }
 
@@ -1328,22 +1222,6 @@ function showThinking() {
   const indicator = document.getElementById('thinking-indicator');
   indicator.classList.remove('hidden');
   indicator.classList.add('flex');
-  
-  const texts = [
-    'Memproses permintaan...',
-    'Menganalisis konteks...',
-    'Menyusun respons...',
-    'Mengoptimalkan output...'
-  ];
-  
-  let i = 0;
-  const textEl = document.getElementById('thinking-text');
-  window.thinkingInterval = setInterval(() => {
-    textEl.textContent = texts[i % texts.length];
-    i++;
-  }, 800);
-  
-  // Scroll
   const chat = document.getElementById('chat-messages');
   chat.scrollTop = chat.scrollHeight;
 }
@@ -1352,7 +1230,6 @@ function hideThinking() {
   const indicator = document.getElementById('thinking-indicator');
   indicator.classList.add('hidden');
   indicator.classList.remove('flex');
-  clearInterval(window.thinkingInterval);
 }
 
 function updateMsgCount() {
@@ -1366,7 +1243,6 @@ function updateCostEstimate() {
   document.getElementById('cost-estimate').textContent = `$${cost}`;
 }
 
-// =================== INPUT HANDLING ===================
 const chatInput = document.getElementById('chat-input');
 chatInput.addEventListener('input', updateCharCount);
 chatInput.addEventListener('keydown', (e) => {
@@ -1382,60 +1258,29 @@ function updateCharCount() {
   document.getElementById('token-count').textContent = Math.ceil(text.length / 4);
 }
 
-// =================== PARAMETERS ===================
 function updateSlider(id, value) {
   const el = document.getElementById(id);
   const num = parseFloat(value);
-  if (id === 'temp-value' || id === 'topp-value') {
-    el.textContent = num.toFixed(2);
-  } else if (id === 'tokens-value') {
-    el.textContent = num;
-  } else {
-    el.textContent = num.toFixed(1);
-  }
-  
-  // Update latency estimate
-  const temp = parseFloat(document.getElementById('temperature').value);
-  const tokens = parseInt(document.getElementById('max-tokens').value);
-  const baseLatency = state.currentModel === 'nexus-flash-2' ? 120 : state.currentModel === 'nexus-mini' ? 80 : 280;
-  const latency = baseLatency + (tokens / 2048) * 100 + temp * 50;
-  document.getElementById('latency-estimate').textContent = `~${Math.round(latency)}ms`;
+  el.textContent = (id === 'tokens-value') ? num : num.toFixed(2);
 }
 
 function changeModel(modelId) {
   state.currentModel = modelId;
   document.getElementById('header-model').textContent = modelId;
-  
-  const model = models.find(m => m.id === modelId);
-  const capsContainer = document.getElementById('model-capabilities');
-  capsContainer.innerHTML = model.caps.map(c => `<span class="badge badge-accent">${c}</span>`).join('') + 
-    `<span class="badge badge-info">${model.ctx} ctx</span>`;
-  
-  showToast(`Model switched to ${model.name}`);
+  showToast(`Model switched to ${modelId}`);
 }
 
 function toggleSwitch(btn) {
   btn.classList.toggle('active');
-  if (btn.classList.contains('active')) {
-    btn.classList.remove('bg-[var(--border-strong)]');
-    btn.classList.add('bg-[var(--accent)]');
-    btn.querySelector('span').classList.remove('left-0.5', 'bg-[var(--fg-dim)]');
-    btn.querySelector('span').classList.add('right-0.5', 'bg-black');
-  } else {
-    btn.classList.add('bg-[var(--border-strong)]');
-    btn.classList.remove('bg-[var(--accent)]');
-    btn.querySelector('span').classList.add('left-0.5', 'bg-[var(--fg-dim)]');
-    btn.querySelector('span').classList.remove('right-0.5', 'bg-black');
-  }
+  btn.classList.toggle('bg-[var(--accent)]');
+  btn.classList.toggle('bg-[var(--border-strong)]');
 }
 
 function toggleRightPanel() {
   const panel = document.getElementById('right-panel');
   panel.classList.toggle('hidden');
-  state.rightPanelOpen = !panel.classList.contains('hidden');
 }
 
-// =================== TEMPLATES ===================
 function useTemplate(type) {
   const template = templates.find(t => t.id === type);
   if (template) {
@@ -1465,7 +1310,6 @@ function renderTemplates() {
   lucide.createIcons();
 }
 
-// =================== MODELS ===================
 function renderModels() {
   const grid = document.getElementById('models-grid');
   grid.innerHTML = models.map(m => `
@@ -1486,10 +1330,6 @@ function renderModels() {
       <div class="flex flex-wrap gap-1 mb-3">
         ${m.caps.map(c => `<span class="badge badge-accent">${c}</span>`).join('')}
       </div>
-      <div class="flex items-center justify-between text-[10px] mono">
-        <span class="text-[var(--fg-dim)]">Speed: <span class="text-[var(--fg-muted)]">${m.speed}</span></span>
-        <span class="text-[var(--fg-dim)]">Cost: <span class="text-[var(--warm)]">${m.cost}</span></span>
-      </div>
     </div>
   `).join('');
 }
@@ -1501,31 +1341,27 @@ function selectModel(id) {
   renderModels();
 }
 
-// =================== HISTORY ===================
 function saveToHistory() {
   const userMsg = state.messages.find(m => m.role === 'user');
   if (!userMsg) return;
-  
-  const existing = state.history.find(h => h.messages === state.messages);
-  if (existing) return;
+  if (state.history.some(h => h.messages === state.messages)) return;
   
   state.history.unshift({
     id: Date.now(),
-    title: userMsg.content.substring(0, 40) + (userMsg.content.length > 40 ? '...' : ''),
+    title: userMsg.content.substring(0, 40),
     preview: userMsg.content.substring(0, 80),
     model: state.currentModel,
     messages: state.messages.slice(),
     timestamp: new Date(),
     msgCount: state.messages.length
   });
-  
   renderRecent();
 }
 
 function renderRecent() {
   const list = document.getElementById('recent-list');
   list.innerHTML = state.history.slice(0, 5).map(h => `
-    <button onclick="loadHistory(${h.id})" class="sidebar-item w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-r-md text-[var(--fg-muted)]">
+    <button onclick="loadHistory(${h.id})" class="sidebar-item w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-r-md text-[var(--fg-muted)] truncate">
       <i data-lucide="message-square" class="w-3 h-3 flex-shrink-0"></i>
       <span class="truncate">${escapeHtml(h.title)}</span>
     </button>
@@ -1538,42 +1374,14 @@ function renderHistory() {
   document.getElementById('history-count').textContent = state.history.length;
   
   if (state.history.length === 0) {
-    list.innerHTML = `
-      <div class="text-center py-12">
-        <div class="inline-flex w-12 h-12 rounded-xl bg-[var(--surface)] items-center justify-center mb-3">
-          <i data-lucide="inbox" class="w-5 h-5 text-[var(--fg-dim)]"></i>
-        </div>
-        <h3 class="text-sm font-medium mb-1">Belum ada history</h3>
-        <p class="text-xs text-[var(--fg-dim)]">Percakapan yang Anda lakukan akan muncul di sini</p>
-      </div>
-    `;
-    lucide.createIcons();
+    list.innerHTML = `<div class="text-center py-12 text-xs text-[var(--fg-dim)]">Belum ada history percakapan.</div>`;
     return;
   }
   
   list.innerHTML = state.history.map(h => `
-    <div class="history-item group bg-[var(--surface)] border border-[var(--border)] rounded-lg p-4 hover:border-[var(--border-strong)] transition cursor-pointer">
-      <div class="flex items-start justify-between gap-3">
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="text-sm font-medium">${escapeHtml(h.title)}</span>
-            <span class="badge badge-accent">${h.model}</span>
-          </div>
-          <p class="text-xs text-[var(--fg-dim)] truncate mb-2">${escapeHtml(h.preview)}</p>
-          <div class="flex items-center gap-3 text-[10px] text-[var(--fg-dim)] mono">
-            <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i>${timeAgo(h.timestamp)}</span>
-            <span class="flex items-center gap-1"><i data-lucide="message-square" class="w-3 h-3"></i>${h.msgCount} messages</span>
-          </div>
-        </div>
-        <div class="history-actions flex items-center gap-1">
-          <button onclick="loadHistory(${h.id}); event.stopPropagation()" class="p-1.5 rounded hover:bg-[var(--surface-2)] text-[var(--fg-dim)] hover:text-[var(--accent)]" data-tooltip="Open">
-            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-          </button>
-          <button onclick="deleteHistory(${h.id}); event.stopPropagation()" class="p-1.5 rounded hover:bg-[var(--surface-2)] text-[var(--fg-dim)] hover:text-[var(--danger)]" data-tooltip="Delete">
-            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-          </button>
-        </div>
-      </div>
+    <div onclick="loadHistory(${h.id})" class="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-4 hover:border-[var(--accent)] transition cursor-pointer">
+      <div class="text-sm font-medium mb-1">${escapeHtml(h.title)}</div>
+      <div class="text-xs text-[var(--fg-dim)] truncate">${escapeHtml(h.preview)}</div>
     </div>
   `).join('');
   lucide.createIcons();
@@ -1582,193 +1390,70 @@ function renderHistory() {
 function loadHistory(id) {
   const h = state.history.find(x => x.id === id);
   if (!h) return;
-  
   state.messages = h.messages.slice();
   document.getElementById('messages-container').innerHTML = '';
   document.getElementById('welcome-state').classList.add('hidden');
   
-  state.messages.forEach(m => {
-    if (m.role === 'user') {
-      addMessage('user', m.content);
-    } else {
-      const container = document.getElementById('messages-container');
-      const msgEl = document.createElement('div');
-      msgEl.className = 'msg-enter';
-      msgEl.innerHTML = `
-        <div class="flex gap-3">
-          <div class="w-7 h-7 rounded-md bg-[var(--accent)] flex items-center justify-center flex-shrink-0">
-            <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 text-black" fill="currentColor">
-              <path d="M12 2L4 7v10l8 5 8-5V7l-8-5zm0 2.3l5.5 3.4v8.6L12 19.7l-5.5-3.4V7.7L12 4.3z"/>
-              <circle cx="12" cy="12" r="2.5"/>
-            </svg>
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 mb-1.5">
-              <span class="text-xs font-semibold">Nexus AI</span>
-              <span class="badge badge-accent">${h.model}</span>
-            </div>
-            <div class="markdown text-sm leading-relaxed">${renderMarkdown(m.content)}</div>
-          </div>
-        </div>
-      `;
-      container.appendChild(msgEl);
-    }
-  });
-  
+  state.messages.forEach(m => addMessage(m.role, m.content));
   switchView('chat');
   updateMsgCount();
-  lucide.createIcons();
-  showToast(`Loaded: ${h.title}`);
 }
 
-function deleteHistory(id) {
-  state.history = state.history.filter(h => h.id !== id);
-  renderHistory();
-  renderRecent();
-  showToast('Conversation deleted');
-}
-
-function timeAgo(date) {
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (seconds < 60) return 'just now';
-  if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
-  if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
-  return Math.floor(seconds / 86400) + 'd ago';
-}
-
-// =================== DATASETS ===================
 function renderDatasets() {
   const list = document.getElementById('datasets-list');
   list.innerHTML = datasets.map(d => `
-    <div class="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-4 hover:border-[var(--border-strong)] transition">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-md bg-[var(--accent-dim)] flex items-center justify-center flex-shrink-0">
-          <i data-lucide="${d.name.endsWith('.pdf') ? 'file-text' : d.name.endsWith('.json') ? 'file-code' : d.name.endsWith('.csv') ? 'file-spreadsheet' : 'file'}" class="w-4 h-4 text-[var(--accent)]"></i>
-        </div>
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2">
-            <span class="text-sm font-medium mono">${d.name}</span>
-            ${d.status === 'processing' ? '<span class="badge badge-warm">PROCESSING</span>' : '<span class="badge badge-accent">INDEXED</span>'}
-          </div>
-          <div class="flex items-center gap-3 text-[10px] text-[var(--fg-dim)] mono mt-1">
-            <span>${d.size}</span>
-            <span>·</span>
-            <span>${d.chunks} chunks</span>
-            <span>·</span>
-            <span>updated ${d.updated}</span>
-          </div>
-        </div>
-        <div class="flex items-center gap-1">
-          <button class="p-1.5 rounded hover:bg-[var(--surface-2)] text-[var(--fg-dim)] hover:text-[var(--accent)]" data-tooltip="Query">
-            <i data-lucide="search" class="w-3.5 h-3.5"></i>
-          </button>
-          <button class="p-1.5 rounded hover:bg-[var(--surface-2)] text-[var(--fg-dim)] hover:text-[var(--danger)]" data-tooltip="Remove">
-            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-          </button>
-        </div>
+    <div class="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-4 flex items-center justify-between">
+      <div>
+        <div class="text-sm font-medium mono">${d.name}</div>
+        <div class="text-[10px] text-[var(--fg-dim)] mono">${d.size} · ${d.chunks} chunks</div>
       </div>
-      ${d.status === 'processing' ? `
-        <div class="meter-track mt-3">
-          <div class="meter-fill" style="width: 67%"></div>
-        </div>
-      ` : ''}
+      <span class="badge badge-accent">INDEXED</span>
     </div>
   `).join('');
   lucide.createIcons();
 }
 
-// =================== BATCH GENERATION ===================
 function runBatchGeneration() {
   const results = document.getElementById('batch-results');
   results.classList.remove('hidden');
-  results.innerHTML = '<div class="text-xs text-[var(--fg-muted)] py-4 flex items-center gap-2"><div class="thinking-dot"></div><div class="thinking-dot"></div><div class="thinking-dot"></div> Generating 3 results...</div>';
-  
+  results.innerHTML = '<div class="text-xs text-[var(--fg-muted)] py-4">Generating batch results...</div>';
   setTimeout(() => {
-    results.innerHTML = `
-      <div class="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-4 fade-in">
-        <div class="flex items-center gap-2 mb-2">
-          <span class="badge badge-info">1/3</span>
-          <span class="text-xs font-medium">Aurora Headphones</span>
-        </div>
-        <p class="text-xs text-[var(--fg-muted)] leading-relaxed">Rasakan keajaiban suara murni dengan Aurora Headphones. Dirancang untuk profesional muda urban yang tidak kompromi pada kualitas. Teknologi <strong>active noise cancelling</strong> tercanggih mengisolasi Anda dari kebisingan kota, membiarkan fokus Anda mengalir tanpa gangguan.</p>
-      </div>
-      <div class="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-4 fade-in" style="animation-delay: 0.1s">
-        <div class="flex items-center gap-2 mb-2">
-          <span class="badge badge-info">2/3</span>
-          <span class="text-xs font-medium">Zenith Smartwatch</span>
-        </div>
-        <p class="text-xs text-[var(--fg-muted)] leading-relaxed">Zenith Smartwatch — pendamping ultimate untuk atlet dan fitness enthusiast. Dengan <strong>7-day battery life</strong> yang luar biasa, jam tangan ini menemani setiap perjalanan tanpa khawatir charging. Tracking presisi, analitik mendalam, performa tanpa batas.</p>
-      </div>
-      <div class="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-4 fade-in" style="animation-delay: 0.2s">
-        <div class="flex items-center gap-2 mb-2">
-          <span class="badge badge-info">3/3</span>
-          <span class="text-xs font-medium">Nomad Backpack</span>
-        </div>
-        <p class="text-xs text-[var(--fg-muted)] leading-relaxed">Nomad Backpack — freedom to roam. Weatherproof 30L capacity yang siap menemani digital nomad dan traveler sejati. Setiap detail dirancang untuk perjalanan: kompartemen laptop terlindungi, akses cepat, dan material tahan segala cuaca.</p>
-      </div>
-      <div class="text-[10px] text-[var(--fg-dim)] mono text-center pt-2">Completed in 2.3s · 2,431 tokens · $0.038</div>
-    `;
+    results.innerHTML = `<div class="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-4 text-xs">Batch generation completed successfully!</div>`;
     showToast('Batch generation complete');
-  }, 2200);
+  }, 1500);
 }
 
-// =================== UTILITIES ===================
 function newConversation() {
   state.messages = [];
   document.getElementById('messages-container').innerHTML = '';
   document.getElementById('welcome-state').classList.remove('hidden');
-  document.getElementById('chat-title').textContent = 'Untitled Conversation';
   updateMsgCount();
   switchView('chat');
-  chatInput.focus();
-  showToast('New conversation created');
 }
 
 function clearChat() {
-  if (state.messages.length === 0) return;
   state.messages = [];
   document.getElementById('messages-container').innerHTML = '';
   document.getElementById('welcome-state').classList.remove('hidden');
   updateMsgCount();
-  showToast('Chat cleared');
 }
 
 function copyLastResponse() {
-  if (state.messages.length === 0) {
-    showToast('No response to copy', 'warn');
-    return;
-  }
-  const lastAssistant = [...state.messages].reverse().find(m => m.role === 'assistant');
-  if (lastAssistant) {
-    navigator.clipboard.writeText(lastAssistant.content);
+  const last = [...state.messages].reverse().find(m => m.role === 'assistant');
+  if (last) {
+    navigator.clipboard.writeText(last.content);
     showToast('Copied to clipboard');
   }
 }
 
-function copyMessage(btn) {
-  const content = btn.closest('.flex.gap-3').querySelector('.markdown').textContent;
-  navigator.clipboard.writeText(content);
-  showToast('Copied to clipboard');
-}
-
 function exportConversation() {
-  if (state.messages.length === 0) {
-    showToast('No conversation to export', 'warn');
-    return;
-  }
-  const data = {
-    model: state.currentModel,
-    timestamp: new Date().toISOString(),
-    messages: state.messages
-  };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(state.messages, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `conversation-${Date.now()}.json`;
+  a.download = `chat-export.json`;
   a.click();
-  URL.revokeObjectURL(url);
-  showToast('Conversation exported');
+  showToast('Exported successfully');
 }
 
 function toggleModal(name) {
@@ -1777,75 +1462,19 @@ function toggleModal(name) {
   modal.classList.toggle('flex');
 }
 
-function showToast(message, type = 'success') {
+function showToast(message) {
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
-  toast.className = 'toast bg-[var(--bg-elevated)] border border-[var(--border)] rounded-lg px-4 py-2.5 shadow-2xl flex items-center gap-2.5 min-w-[200px]';
-  
-  const colors = {
-    success: 'text-[var(--accent)]',
-    warn: 'text-[var(--warm)]',
-    error: 'text-[var(--danger)]'
-  };
-  const icons = {
-    success: 'check-circle',
-    warn: 'alert-triangle',
-    error: 'x-circle'
-  };
-  
-  toast.innerHTML = `
-    <i data-lucide="${icons[type]}" class="w-4 h-4 ${colors[type]}"></i>
-    <span class="text-xs">${message}</span>
-  `;
+  toast.className = 'toast bg-[var(--bg-elevated)] border border-[var(--border)] rounded-lg px-4 py-2.5 text-xs shadow-2xl';
+  toast.textContent = message;
   container.appendChild(toast);
-  lucide.createIcons();
-  
-  setTimeout(() => {
-    toast.style.transition = 'all 0.3s';
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateY(20px)';
-    setTimeout(() => toast.remove(), 300);
-  }, 2500);
+  setTimeout(() => toast.remove(), 2500);
 }
 
-// History search
-document.getElementById('history-search')?.addEventListener('input', (e) => {
-  const query = e.target.value.toLowerCase();
-  const items = document.querySelectorAll('#history-list .history-item');
-  items.forEach(item => {
-    const text = item.textContent.toLowerCase();
-    item.style.display = text.includes(query) ? '' : 'none';
-  });
-});
-
-// Keyboard shortcuts
-document.addEventListener('keydown', (e) => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-    e.preventDefault();
-    newConversation();
-  }
-  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'P') {
-    e.preventDefault();
-    toggleRightPanel();
-  }
-  if (e.key === 'Escape') {
-    document.querySelectorAll('.modal-backdrop').forEach(m => {
-      m.classList.add('hidden');
-      m.classList.remove('flex');
-    });
-  }
-});
-
-// =================== INIT ===================
 window.addEventListener('DOMContentLoaded', () => {
   lucide.createIcons();
   renderRecent();
   updateCharCount();
-  
-  // Initialize with a demo conversation
-  setTimeout(() => {
-    showToast('Welcome to Nexus AI Studio');
-  }, 500);
 });
 </script>
 </body>
